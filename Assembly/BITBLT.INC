@@ -65,39 +65,40 @@
     ENDM
 
 .data
-    szDisplayName db "BitBlt",0
-    CommandLine   dd 0
-    hWnd          dd 0
-    hInstance     dd 0
-    hIcon         dd 0
-    hBmp          dd 0
-    hBmp2         dd 0
-	
-    memDC2        DWORD 0 
-    x	 		  dd 0
-    trasp		  dd  0
-    achou		  dd  0
-    lRect         RECT <>
-    hitpoint 	  POINT <>
-    posicao       POINT <>
-    ThreadID 	  dd 0
+  velocidade DWORD 5
+  largura DWORD 672
+  altura  DWORD 768
+  szDisplayName db "Space Invaders",0
+  CommandLine   dd 0
+  hWnd          dd 0
+  hInstance     dd 0
+  hIcon         dd 0
+  hBmp          dd 0
+
+  memDC2        DWORD 0 
+  x	 		  dd 0
+  trasp		  dd  0
+  achou		  dd  0
+  lRect         RECT <>
+  hitpoint 	  POINT <>
+  posicao       POINT <>
+  ThreadID 	  dd 0
 	ExitCode 	  dd 0
 	hThread 	  dd 0
 	hEventStart   dd 0
 
-    missilAtual   dd 0
-    missilPos     POINT <>
+  missilAtual   dd 0
+  missilPos     POINT <>
 	
 	flagPos 	  POINT <>
 	hThreadFlag	  dd 0
 	ThreadFlagID  dd 0
 	rectF         RECT <>
-	AppName  db "Missil moving to sky",0
+	AppName  db "Space Invaders",0
 	
 	garfieldPos   POINT <>
 	hThread_G	  dd 0
-    ThreadID_G	  dd 0 
-	hBmp_G		  dd 0 
+  ThreadID_G	  dd 0
 	estado_g	  dd 0
 	g_sprite      POINT <>
 

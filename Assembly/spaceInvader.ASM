@@ -7,12 +7,9 @@
     include bitblt.inc    ; local includes for this file
 
 	; código de link para imagem no arquivo RC
-	b2			equ		111
-	b3			equ	    112
+	bmp			equ		111
 
-	CREF_TRANSPARENT  EQU 0FF00FFh
-	CREF_TRANSPARENT2 EQU 0FF0000h
-	CREF_TRANSPARENT3 EQU 0FFFFFFh
+	CREF_TRANSPARENT  EQU 0000000h
 
 
 ; #########################################################################
@@ -23,11 +20,9 @@ start:
     invoke GetModuleHandle, NULL
     mov hInstance, eax
  
-    invoke LoadBitmap,hInstance, b2
-    mov hBmp2, eax
+    invoke LoadBitmap,hInstance, bmp
+    mov hBmp, eax
 
-    invoke LoadBitmap,hInstance, b3
-    mov hBmp_G, eax
 
     invoke GetCommandLine
     mov CommandLine, eax
@@ -60,7 +55,7 @@ WinMain proc hInst     :DWORD,
     invoke LoadIcon,hInst,500    ; icon ID
     mov hIcon, eax
 
-    szText szClassName,"Missil_20_Class"
+    szText szClassName,"Space_Invaders_Class"
 
     mov wc.cbSize,         sizeof WNDCLASSEX
     mov wc.style,          CS_BYTEALIGNWINDOW
@@ -82,8 +77,14 @@ WinMain proc hInst     :DWORD,
     ; Centre window at following size
     ;================================
 
-    mov Wwd, 800
-    mov Wht, 400
+    push edx
+    xor edx, edx
+    mov edx, largura
+    mov Wwd, edx
+    xor edx, edx
+    mov edx, altura
+    mov Wht, edx
+    pop edx
 
     invoke GetSystemMetrics,SM_CXSCREEN
     invoke TopXY,Wwd,eax
@@ -145,19 +146,19 @@ WndProc proc hWin   :DWORD,
 		mov missilPos.y, 300
 		mov missilPos.x, 100
 		
-		mov flagPos.y, 80
-		mov flagPos.x, 100
+		;mov flagPos.y, 80
+		;mov flagPos.x, 100
 		
-		mov rectF.top, 0
-		mov rectF.left,0
-		mov rectF.right, 33
-		mov rectF.bottom, 33
+		;mov rectF.top, 0
+		;mov rectF.left,0
+		;mov rectF.right, 33
+		;mov rectF.bottom, 33
 		
-		mov garfieldPos.x , 200
-		mov garfieldPos.y , 40
-		mov estado_g, 0 
-		mov g_sprite.x, 22
-		mov g_sprite.y, 0
+		;mov garfieldPos.x , 200
+		;mov garfieldPos.y , 40
+		;mov estado_g, 0 
+		;mov g_sprite.x, 22
+		;mov g_sprite.y, 0
 		
 		invoke CreateEvent,NULL,FALSE,FALSE,NULL
 		mov    hEventStart,eax
@@ -168,17 +169,17 @@ WndProc proc hWin   :DWORD,
 		                    ADDR ThreadID
 		mov    hThread,eax
 
-		mov    eax,OFFSET ThreadFlagProc
-		invoke CreateThread,NULL,NULL,eax,\
-		                    NULL,NORMAL_PRIORITY_CLASS,\
-		                    ADDR ThreadFlagID
-		mov    hThreadFlag,eax
+		;mov    eax,OFFSET ThreadFlagProc
+		;invoke CreateThread,NULL,NULL,eax,\
+		;                    NULL,NORMAL_PRIORITY_CLASS,\
+		;                    ADDR ThreadFlagID
+		;mov    hThreadFlag,eax
 		
-		mov    eax,OFFSET Thread_G_Proc
-		invoke CreateThread,NULL,NULL,eax,\
-		                    NULL,NORMAL_PRIORITY_CLASS,\
-		                    ADDR ThreadID_G
-		mov    hThread_G,eax
+		;mov    eax,OFFSET Thread_G_Proc
+		;invoke CreateThread,NULL,NULL,eax,\
+		;                    NULL,NORMAL_PRIORITY_CLASS,\
+		;                    ADDR ThreadID_G
+		;mov    hThread_G,eax
 		
 		
 		
@@ -204,43 +205,55 @@ WndProc proc hWin   :DWORD,
    	    
    .elseif uMsg==WM_FINISH
 
-		sub missilPos.y, 1
+        push edx
+        xor edx, edx
+        mov edx, velocidade
+		sub missilPos.x, edx
+        pop edx
 		
-		.if missilPos.y <= 0
+		.if missilPos.x <= 0
 			mov missilPos.y,300
-			mov missilPos.x,100
-		.endif 
+            mov velocidade, -5
+		.endif
+        push edx
+        xor edx, edx
+        mov edx, largura
+        .if missilPos.x >= edx
+        mov missilPos.y,300
+        mov velocidade, 5
+        .endif
+        pop edx 
 		invoke InvalidateRect,hWnd,NULL,TRUE	
 
-	.elseif uMsg==WM_FLAG
+	;.elseif uMsg==WM_FLAG
 
-		inc flagPos.x
+	;	inc flagPos.x
 		
-		.if flagPos.x > 800
-			mov flagPos.y,80
-			mov flagPos.x,0
-		.endif 
+	;	.if flagPos.x > 800
+	;		mov flagPos.y,80
+	;		mov flagPos.x,0
+	;	.endif 
 		
 		 
 		
-		invoke InvalidateRect,hWnd,NULL ,FALSE ;ADDR rectF,FALSE	
+		;invoke InvalidateRect,hWnd,NULL ,FALSE ;ADDR rectF,FALSE	
 	
-	.elseif uMsg==WM_GARFIELD
+	;.elseif uMsg==WM_GARFIELD
 
-		inc estado_g
+	;	inc estado_g
 		
-		.if estado_g > 3
-		  mov estado_g, 0
-		.endif
-		.if estado_g == 0
-		  mov g_sprite.x , 22
-		.elseif estado_g == 1
-  		  mov g_sprite.x , 44
-		.elseif estado_g == 2
-  		  mov g_sprite.x , 66
-		.elseif estado_g == 3
-  		  mov g_sprite.x , 88		  
-		.endif
+	;	.if estado_g > 3
+	;	  mov estado_g, 0
+	;	.endif
+	;	.if estado_g == 0
+	;	  mov g_sprite.x , 22
+	;	.elseif estado_g == 1
+  	;	  mov g_sprite.x , 44
+	;	.elseif estado_g == 2
+  	;	  mov g_sprite.x , 66
+	;	.elseif estado_g == 3
+  	;	  mov g_sprite.x , 88		  
+	;	.endif
     .elseif uMsg == WM_DESTROY
     	mov  EventStop,TRUE
         invoke PostQuitMessage,NULL
@@ -278,22 +291,22 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
     mov memDC, eax
     
 	
-	invoke SelectObject,memDC,hBmp2  ; selecionei o novo bitmap
+	invoke SelectObject,memDC,hBmp  ; selecionei o novo bitmap
     mov hOld, eax         
  
-    INVOKE  TransparentBlt,hDC,missilPos.x,missilPos.y,32,32,memDC,0,64,32,32,CREF_TRANSPARENT        
+    INVOKE  TransparentBlt,hDC,missilPos.x,missilPos.y,36,24,memDC,0,0,36,24,CREF_TRANSPARENT        
 
-    INVOKE  TransparentBlt,hDC,flagPos.x,flagPos.y,32,32,memDC,0,320,32,32,CREF_TRANSPARENT        
+    ;INVOKE  TransparentBlt,hDC,flagPos.x,flagPos.y,32,32,memDC,0,320,32,32,CREF_TRANSPARENT        
 
-	INVOKE  TransparentBlt,hDC,100,80,32,32,memDC,0,0,32,32,CREF_TRANSPARENT
+	;INVOKE  TransparentBlt,hDC,100,80,32,32,memDC,0,0,32,32,CREF_TRANSPARENT
 
 
     invoke SelectObject,hDC,hOld
 	
-	invoke SelectObject,memDC,hBmp_G  ; selecionei o novo bitmap
-    mov hOld, eax         
-	invoke BitBlt,hDC,100,40,22,32,memDC,0,0,SRCCOPY
-    INVOKE  TransparentBlt,hDC,garfieldPos.x,garfieldPos.y,22,32,memDC,g_sprite.x,g_sprite.y,22,32,CREF_TRANSPARENT3
+	;invoke SelectObject,memDC,hBmp_G  ; selecionei o novo bitmap
+    ;mov hOld, eax         
+	;invoke BitBlt,hDC,100,40,22,32,memDC,0,0,SRCCOPY
+    ;INVOKE  TransparentBlt,hDC,garfieldPos.x,garfieldPos.y,22,32,memDC,g_sprite.x,g_sprite.y,22,32,CREF_TRANSPARENT3
 	
 	
 	invoke SelectObject,hDC,hOld
@@ -309,10 +322,10 @@ Paint_Proc endp
 
 ThreadProc PROC USES ecx Param:DWORD
 
-    invoke WaitForSingleObject,hEventStart,10 ;INFINITE
+    invoke WaitForSingleObject,hEventStart,100 ;INFINITE
 
 	.IF eax == WAIT_TIMEOUT	
-	   ; invoke PostMessage,hWnd,WM_FINISH,NULL,NULL
+	    invoke PostMessage,hWnd,WM_FINISH,NULL,NULL
 	    jmp   ThreadProc     
 	.ELSEIF eax == WAIT_OBJECT_0	
 	    invoke PostMessage,hWnd,WM_FINISH,NULL,NULL
@@ -324,34 +337,34 @@ ThreadProc PROC USES ecx Param:DWORD
     ret
 ThreadProc ENDP
 
-ThreadFlagProc PROC USES ecx Param:DWORD
+;ThreadFlagProc PROC USES ecx Param:DWORD
 
-    invoke WaitForSingleObject,hEventStart,10 ;INFINITE
+ ;   invoke WaitForSingleObject,hEventStart,10 ;INFINITE
 
-	.IF eax == WAIT_TIMEOUT	
-	    invoke PostMessage,hWnd,WM_FLAG,NULL,NULL
-	    jmp   ThreadFlagProc     
-    .ENDIF
+;	.IF eax == WAIT_TIMEOUT	
+;	    invoke PostMessage,hWnd,WM_FLAG,NULL,NULL
+;	    jmp   ThreadFlagProc     
+;    .ENDIF
         
-    jmp   ThreadFlagProc
+;    jmp   ThreadFlagProc
         
-    ret
-ThreadFlagProc ENDP
+;    ret
+;ThreadFlagProc ENDP
 
 
-Thread_G_Proc PROC USES ecx Param:DWORD
+;Thread_G_Proc PROC USES ecx Param:DWORD
 
-    invoke WaitForSingleObject,hEventStart,400;INFINITE
+;    invoke WaitForSingleObject,hEventStart,400;INFINITE
 
-	.IF eax == WAIT_TIMEOUT	
+;	.IF eax == WAIT_TIMEOUT	
 	   ; invoke PostMessage,hWnd,WM_GARFIELD,NULL,NULL
-	    jmp   Thread_G_Proc     
-    .ENDIF
+;	    jmp   Thread_G_Proc     
+;    .ENDIF
         
-    jmp   Thread_G_Proc
+;    jmp   Thread_G_Proc
         
-    ret
-Thread_G_Proc ENDP
+;    ret
+;Thread_G_Proc ENDP
 
 
 
