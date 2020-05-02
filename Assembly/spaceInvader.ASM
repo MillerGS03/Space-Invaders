@@ -17,6 +17,8 @@
 .code
 
 start:
+    include AliensProc.ASM
+
     invoke GetModuleHandle, NULL
     mov hInstance, eax
  
@@ -185,15 +187,6 @@ WndProc proc hWin   :DWORD,
 		
     .elseif uMsg == WM_SIZE
 ;    // obter o tamanho da janela
-    
-    .elseif uMsg == WM_LBUTTONDOWN
-		mov eax,lParam
-		and eax,0ffffh
-		mov hitpoint.x,eax
-		mov eax,lParam
-		shr eax,16
-		mov hitpoint.y,eax
-		invoke InvalidateRect,hWnd,NULL,TRUE
 		
     .elseif uMsg == WM_PAINT
         invoke BeginPaint,hWin,ADDR Ps
@@ -204,7 +197,6 @@ WndProc proc hWin   :DWORD,
 
    	    
    .elseif uMsg==WM_FINISH
-
         push edx
         xor edx, edx
         mov edx, velocidade
@@ -225,35 +217,7 @@ WndProc proc hWin   :DWORD,
         pop edx 
 		invoke InvalidateRect,hWnd,NULL,TRUE	
 
-	;.elseif uMsg==WM_FLAG
 
-	;	inc flagPos.x
-		
-	;	.if flagPos.x > 800
-	;		mov flagPos.y,80
-	;		mov flagPos.x,0
-	;	.endif 
-		
-		 
-		
-		;invoke InvalidateRect,hWnd,NULL ,FALSE ;ADDR rectF,FALSE	
-	
-	;.elseif uMsg==WM_GARFIELD
-
-	;	inc estado_g
-		
-	;	.if estado_g > 3
-	;	  mov estado_g, 0
-	;	.endif
-	;	.if estado_g == 0
-	;	  mov g_sprite.x , 22
-	;	.elseif estado_g == 1
-  	;	  mov g_sprite.x , 44
-	;	.elseif estado_g == 2
-  	;	  mov g_sprite.x , 66
-	;	.elseif estado_g == 3
-  	;	  mov g_sprite.x , 88		  
-	;	.endif
     .elseif uMsg == WM_DESTROY
     	mov  EventStop,TRUE
         invoke PostQuitMessage,NULL
@@ -336,36 +300,5 @@ ThreadProc PROC USES ecx Param:DWORD
         
     ret
 ThreadProc ENDP
-
-;ThreadFlagProc PROC USES ecx Param:DWORD
-
- ;   invoke WaitForSingleObject,hEventStart,10 ;INFINITE
-
-;	.IF eax == WAIT_TIMEOUT	
-;	    invoke PostMessage,hWnd,WM_FLAG,NULL,NULL
-;	    jmp   ThreadFlagProc     
-;    .ENDIF
-        
-;    jmp   ThreadFlagProc
-        
-;    ret
-;ThreadFlagProc ENDP
-
-
-;Thread_G_Proc PROC USES ecx Param:DWORD
-
-;    invoke WaitForSingleObject,hEventStart,400;INFINITE
-
-;	.IF eax == WAIT_TIMEOUT	
-	   ; invoke PostMessage,hWnd,WM_GARFIELD,NULL,NULL
-;	    jmp   Thread_G_Proc     
-;    .ENDIF
-        
-;    jmp   Thread_G_Proc
-        
-;    ret
-;Thread_G_Proc ENDP
-
-
 
 end start

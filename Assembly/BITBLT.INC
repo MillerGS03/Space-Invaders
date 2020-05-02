@@ -65,9 +65,7 @@
     ENDM
 
 .data
-  velocidade DWORD 5
-  largura DWORD 672
-  altura  DWORD 768
+  ;Janela
   szDisplayName db "Space Invaders",0
   CommandLine   dd 0
   hWnd          dd 0
@@ -75,47 +73,34 @@
   hIcon         dd 0
   hBmp          dd 0
 
-  memDC2        DWORD 0 
-  x	 		  dd 0
-  trasp		  dd  0
-  achou		  dd  0
-  lRect         RECT <>
-  hitpoint 	  POINT <>
-  posicao       POINT <>
   ThreadID 	  dd 0
 	ExitCode 	  dd 0
 	hThread 	  dd 0
 	hEventStart   dd 0
 
-  missilAtual   dd 0
-  missilPos     POINT <>
-	
-	flagPos 	  POINT <>
-	hThreadFlag	  dd 0
-	ThreadFlagID  dd 0
-	rectF         RECT <>
-	AppName  db "Space Invaders",0
-	
-	garfieldPos   POINT <>
-	hThread_G	  dd 0
-  ThreadID_G	  dd 0
-	estado_g	  dd 0
-	g_sprite      POINT <>
-
+  AppName  db "Space Invaders",0
 	EventStop BOOL FALSE
 
+  largura DWORD 672
+  altura  DWORD 768
 
+  ;Vars
+  velocidade DWORD 5
+  larAli db 6 ;Multiplicado por 6 da o tamanho de fato
+  altAli db 4 ;Multiplicado por 6 da o tamanho de fato
 
-.const
-	IDM_TEST equ 1     
+  posicaoY db 0
+  posicaoX db 0
+
+  missilAtual   dd 0
+  missilPos     POINT <>
+
+  aliensX db "0123456789012345678901234567890123456789012345678901234", 255 ;posicoes X dos aliens
+  aliensY db "0123456789012345678901234567890123456789012345678901234", 255 ;posicoes Y dos aliens
+
+.const 
 	WM_FINISH equ WM_USER+100h
-	WM_FLAG   equ WM_USER+101h
-	WM_GARFIELD equ WM_USER+102h
-	
-        
         
 
-; ########################### Inserted modules ############################
-
-
+; ###########################       Procs      ############################
 ; #########################################################################
