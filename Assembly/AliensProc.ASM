@@ -1,24 +1,31 @@
-IniciaAliens proc iniY : BYTE
+IniciaAliens proc
+    ;cl contera a posicaY
     xor eax, eax ; o numero total de aliens
-    xor ecx, ecx ; cl eh auxiliar; ch eh contador
 
     mov edx, OFFSET aliensX
     mov ebx, OFFSET aliensY
     mov posicaoX, 12
-    mov posicaoY, 8
+    mov posicaoY, cl
+
+    xor ecx, ecx ; cl eh auxiliar; ch eh contador
 
     forIni:
         .if ch == 11
             mov cl, altAli
             add posicaoY, cl
+            inc posicaoY ;espacamento entre os aliens
             mov posicaoX, 12
 
             xor ch, ch
         .endif
         
-        mov byte ptr[edx + eax], posicaoX
-        mov byte ptr[ebx + eax], posicaoY
-        add posicaoX, larAli
+        mov cl, posicaoX
+        mov byte ptr[edx + eax], cl
+        mov cl, posicaoY
+        mov byte ptr[ebx + eax], cl
+        mov cl, larAli
+        add posicaoX, cl
+        add posicaoX, 2
 
         inc eax; avanca p o próx
         inc ch
@@ -27,4 +34,5 @@ IniciaAliens proc iniY : BYTE
             jmp forIni
         .endif
 
+    ret
 IniciaAliens endp

@@ -17,8 +17,6 @@
 .code
 
 start:
-    include AliensProc.ASM
-
     invoke GetModuleHandle, NULL
     mov hInstance, eax
  
@@ -143,11 +141,7 @@ WndProc proc hWin   :DWORD,
     ;======== menu commands ========
 		mov eax,wParam
 		 
-    .elseif uMsg == WM_CREATE
-		mov	missilAtual, 0
-		mov missilPos.y, 300
-		mov missilPos.x, 100
-		
+    .elseif uMsg == WM_CREATE		
 		;mov flagPos.y, 80
 		;mov flagPos.x, 100
 		
@@ -183,6 +177,8 @@ WndProc proc hWin   :DWORD,
 		;                    ADDR ThreadID_G
 		;mov    hThread_G,eax
 		
+        mov cl, 8
+        call IniciaAliens
 		
 		
     .elseif uMsg == WM_SIZE
@@ -197,25 +193,25 @@ WndProc proc hWin   :DWORD,
 
    	    
    .elseif uMsg==WM_FINISH
-        push edx
-        xor edx, edx
-        mov edx, velocidade
-		sub missilPos.x, edx
-        pop edx
+        ;push edx
+        ;xor edx, edx
+        ;mov edx, velocidade
+		;sub missilPos.x, edx
+        ;pop edx
 		
-		.if missilPos.x <= 0
-			mov missilPos.y,300
-            mov velocidade, -5
-		.endif
-        push edx
-        xor edx, edx
-        mov edx, largura
-        .if missilPos.x >= edx
-        mov missilPos.y,300
-        mov velocidade, 5
-        .endif
-        pop edx 
-		invoke InvalidateRect,hWnd,NULL,TRUE	
+		;.if missilPos.x <= 0
+			;mov missilPos.y,300
+            ;mov velocidade, -5
+		;.endif
+        ;push edx
+        ;xor edx, edx
+        ;mov edx, largura
+        ;.if missilPos.x >= edx
+        ;mov missilPos.y,300
+        ;mov velocidade, 5
+        ;.endif
+        ;pop edx 
+		;invoke InvalidateRect,hWnd,NULL,TRUE	
 
 
     .elseif uMsg == WM_DESTROY
@@ -258,7 +254,45 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
 	invoke SelectObject,memDC,hBmp  ; selecionei o novo bitmap
     mov hOld, eax         
  
-    INVOKE  TransparentBlt,hDC,missilPos.x,missilPos.y,36,24,memDC,0,0,36,24,CREF_TRANSPARENT        
+    ;#################################
+    mov eax, OFFSET aliensX
+    xor ebx, ebx ;contador
+    xor ecx, ecx ;auxiliar
+    mov edx, OFFSET aliensY
+
+
+    forDesenhar:
+        mov cl, byte ptr[eax + ebx]
+        imul ecx, ecx, 6
+        mov printPos.x, ecx
+
+        mov cl, [edx + ebx]
+        imul ecx, ecx, 6
+        mov printPos.y, ecx
+
+        push eax
+        push ebx
+        push ecx
+        push edx
+        INVOKE  TransparentBlt,hDC,printPos.x,printPos.y,36,24,memDC,0,0,36,24,CREF_TRANSPARENT
+        pop edx
+        pop ecx
+        pop ebx
+        pop eax
+
+        ;.if ebx < 11
+        ;    INVOKE  TransparentBlt,hDC,printPos.x,printPos.y,36,24,memDC,0,0,36,24,CREF_TRANSPARENT  
+        ;.elseif ebx < 33
+        ;    INVOKE  TransparentBlt,hDC,printPos.x,printPos.y,36,24,memDC,72,0,36,24,CREF_TRANSPARENT  
+        ;.elseif ebx < 55
+        ;    INVOKE  TransparentBlt,hDC,printPos.x,printPos.y,36,24,memDC,144,0,36,24,CREF_TRANSPARENT  
+        ;.endif
+
+        inc ebx
+        .if ebx < 55
+            jmp forDesenhar
+        .endif
+    ;#################################      
 
     ;INVOKE  TransparentBlt,hDC,flagPos.x,flagPos.y,32,32,memDC,0,320,32,32,CREF_TRANSPARENT        
 
@@ -300,5 +334,10 @@ ThreadProc PROC USES ecx Param:DWORD
         
     ret
 ThreadProc ENDP
+
+; ########################################################################
+;Procs externas
+
+include AliensProc.ASM
 
 end start

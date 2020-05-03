@@ -92,8 +92,7 @@
   posicaoY db 0
   posicaoX db 0
 
-  missilAtual   dd 0
-  missilPos     POINT <>
+  printPos     POINT <>
 
   aliensX db "0123456789012345678901234567890123456789012345678901234", 255 ;posicoes X dos aliens
   aliensY db "0123456789012345678901234567890123456789012345678901234", 255 ;posicoes Y dos aliens
