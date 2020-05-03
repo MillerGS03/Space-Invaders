@@ -63,7 +63,7 @@ WinMain proc hInst     :DWORD,
     mov wc.cbClsExtra,     NULL
     mov wc.cbWndExtra,     NULL
     m2m wc.hInstance,      hInst
-    mov wc.hbrBackground,  COLOR_BTNFACE+1
+    mov wc.hbrBackground,  COLOR_WINDOWTEXT
     mov wc.lpszMenuName,   NULL   ;OFFSET MenuName
     mov wc.lpszClassName,  offset szClassName
     m2m wc.hIcon,          hIcon
@@ -193,26 +193,12 @@ WndProc proc hWin   :DWORD,
 
    	    
    .elseif uMsg==WM_FINISH
-        ;push edx
-        ;xor edx, edx
-        ;mov edx, velocidade
-		;sub missilPos.x, edx
-        ;pop edx
-		
-		;.if missilPos.x <= 0
-			;mov missilPos.y,300
-            ;mov velocidade, -5
-		;.endif
-        ;push edx
-        ;xor edx, edx
-        ;mov edx, largura
-        ;.if missilPos.x >= edx
-        ;mov missilPos.y,300
-        ;mov velocidade, 5
-        ;.endif
-        ;pop edx 
-		;invoke InvalidateRect,hWnd,NULL,TRUE	
+        inc gTick	
+        .if gTick >= 100
+            mov gTick, 0
+        .endif
 
+        invoke InvalidateRect,hWnd,NULL,TRUE
 
     .elseif uMsg == WM_DESTROY
     	mov  EventStop,TRUE
@@ -262,32 +248,42 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
 
 
     forDesenhar:
+        ;Descobrindo as posicoes de X e Y
+        xor ecx, ecx
         mov cl, byte ptr[eax + ebx]
         imul ecx, ecx, 6
         mov printPos.x, ecx
 
-        mov cl, [edx + ebx]
+        xor ecx, ecx
+        mov cl, byte ptr[edx + ebx]
         imul ecx, ecx, 6
         mov printPos.y, ecx
+        
+        ;Descobrindo o sprite
+        xor ecx, ecx
+        .if ebx < 11
+            mov cl, 0
+        .elseif ebx < 33
+            mov cl, 72 
+        .elseif ebx < 55
+            mov cl, 144
+        .endif
 
+        ;Descobrindo o index do sprite
+        .if gTick > 49 ;Abertos
+            add cl, 36
+        .endif
+
+        ;Printando o sprite
         push eax
         push ebx
-        push ecx
         push edx
-        INVOKE  TransparentBlt,hDC,printPos.x,printPos.y,36,24,memDC,0,0,36,24,CREF_TRANSPARENT
+            INVOKE  TransparentBlt,hDC,printPos.x,printPos.y,36,24,memDC, ecx,0,36,24,CREF_TRANSPARENT 
         pop edx
-        pop ecx
         pop ebx
         pop eax
 
-        ;.if ebx < 11
-        ;    INVOKE  TransparentBlt,hDC,printPos.x,printPos.y,36,24,memDC,0,0,36,24,CREF_TRANSPARENT  
-        ;.elseif ebx < 33
-        ;    INVOKE  TransparentBlt,hDC,printPos.x,printPos.y,36,24,memDC,72,0,36,24,CREF_TRANSPARENT  
-        ;.elseif ebx < 55
-        ;    INVOKE  TransparentBlt,hDC,printPos.x,printPos.y,36,24,memDC,144,0,36,24,CREF_TRANSPARENT  
-        ;.endif
-
+        ;Verificando se devemos sair do loop
         inc ebx
         .if ebx < 55
             jmp forDesenhar

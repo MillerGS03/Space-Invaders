@@ -93,6 +93,7 @@
   posicaoX db 0
 
   printPos     POINT <>
+  gTick    db 0
 
   aliensX db "0123456789012345678901234567890123456789012345678901234", 255 ;posicoes X dos aliens
   aliensY db "0123456789012345678901234567890123456789012345678901234", 255 ;posicoes Y dos aliens

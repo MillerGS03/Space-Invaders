@@ -13,7 +13,7 @@ IniciaAliens proc
         .if ch == 11
             mov cl, altAli
             add posicaoY, cl
-            inc posicaoY ;espacamento entre os aliens
+            add posicaoY, 2 ;espacamento entre os aliens
             mov posicaoX, 12
 
             xor ch, ch
