@@ -179,6 +179,7 @@ WndProc proc hWin   :DWORD,
 		
         mov cl, 8
         call IniciaAliens
+        ;call AtualizaLimites
 		
 		
     .elseif uMsg == WM_SIZE
@@ -194,9 +195,17 @@ WndProc proc hWin   :DWORD,
    	    
    .elseif uMsg==WM_FINISH
         inc gTick	
-        .if gTick >= 100
+        .if gTick >= 25
             mov gTick, 0
+
+            .if indexAli == 36
+                mov indexAli, 0
+            .else
+                mov indexAli, 36
+            .endif
         .endif
+
+        call MovAliens
 
         invoke InvalidateRect,hWnd,NULL,TRUE
 
@@ -252,11 +261,13 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
         xor ecx, ecx
         mov cl, byte ptr[eax + ebx]
         imul ecx, ecx, 6
+        add ecx, movidoPos.x
         mov printPos.x, ecx
 
         xor ecx, ecx
         mov cl, byte ptr[edx + ebx]
         imul ecx, ecx, 6
+        add ecx, movidoPos.y
         mov printPos.y, ecx
         
         ;Descobrindo o sprite
@@ -270,9 +281,7 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
         .endif
 
         ;Descobrindo o index do sprite
-        .if gTick > 49 ;Abertos
-            add cl, 36
-        .endif
+        add cl, indexAli
 
         ;Printando o sprite
         push eax

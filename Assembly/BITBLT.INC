@@ -85,15 +85,20 @@
   altura  DWORD 768
 
   ;Vars
-  velocidade DWORD 5
+  velAli db 5
+  velDir db 0 ;0 - esquerda, 1 - direita
   larAli db 6 ;Multiplicado por 6 da o tamanho de fato
   altAli db 4 ;Multiplicado por 6 da o tamanho de fato
 
   posicaoY db 0
   posicaoX db 0
 
-  printPos     POINT <>
-  gTick    db 0
+  printPos   POINT <>
+  movidoPos  POINT <> ;guarda quanto foi andado desde a posicao inicial
+  indexAli   db 0
+  limEsq     db 0  ;guarda a coluna mais a esquerda com aliens
+  limDir     db 10 ;guarda a coluna mais a direita com aliens
+  gTick      db 0
 
   aliensX db "0123456789012345678901234567890123456789012345678901234", 255 ;posicoes X dos aliens
   aliensY db "0123456789012345678901234567890123456789012345678901234", 255 ;posicoes Y dos aliens
