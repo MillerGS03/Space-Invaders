@@ -177,9 +177,12 @@ WndProc proc hWin   :DWORD,
 		;                    ADDR ThreadID_G
 		;mov    hThread_G,eax
 		
+        mov movidoPos.x, 0
+        mov movidoPos.y, 0
+
         mov cl, 8
         call IniciaAliens
-        ;call AtualizaLimites
+        call AtualizaLimites
 		
 		
     .elseif uMsg == WM_SIZE
@@ -197,12 +200,6 @@ WndProc proc hWin   :DWORD,
         inc gTick	
         .if gTick >= 25
             mov gTick, 0
-
-            .if indexAli == 36
-                mov indexAli, 0
-            .else
-                mov indexAli, 36
-            .endif
         .endif
 
         call MovAliens
@@ -258,11 +255,19 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
 
     forDesenhar:
         ;Descobrindo as posicoes de X e Y
+        push edx
+        xor edx, edx ;serivra momentaneamente como auxiliar
+
         xor ecx, ecx
         mov cl, byte ptr[eax + ebx]
         imul ecx, ecx, 6
         add ecx, movidoPos.x
+        mov dl, limEsq
+        imul edx, edx, 6
+        sub ecx, edx
         mov printPos.x, ecx
+
+        pop edx
 
         xor ecx, ecx
         mov cl, byte ptr[edx + ebx]
@@ -325,7 +330,7 @@ Paint_Proc endp
 
 ThreadProc PROC USES ecx Param:DWORD
 
-    invoke WaitForSingleObject,hEventStart,100 ;INFINITE
+    invoke WaitForSingleObject,hEventStart,600 ;INFINITE          ;DELAY AQUI--------------------------------------
 
 	.IF eax == WAIT_TIMEOUT	
 	    invoke PostMessage,hWnd,WM_FINISH,NULL,NULL
