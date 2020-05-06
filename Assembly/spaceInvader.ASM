@@ -141,21 +141,7 @@ WndProc proc hWin   :DWORD,
     ;======== menu commands ========
 		mov eax,wParam
 		 
-    .elseif uMsg == WM_CREATE		
-		;mov flagPos.y, 80
-		;mov flagPos.x, 100
-		
-		;mov rectF.top, 0
-		;mov rectF.left,0
-		;mov rectF.right, 33
-		;mov rectF.bottom, 33
-		
-		;mov garfieldPos.x , 200
-		;mov garfieldPos.y , 40
-		;mov estado_g, 0 
-		;mov g_sprite.x, 22
-		;mov g_sprite.y, 0
-		
+    .elseif uMsg == WM_CREATE				
 		invoke CreateEvent,NULL,FALSE,FALSE,NULL
 		mov    hEventStart,eax
 		
@@ -165,28 +151,46 @@ WndProc proc hWin   :DWORD,
 		                    ADDR ThreadID
 		mov    hThread,eax
 
-		;mov    eax,OFFSET ThreadFlagProc
-		;invoke CreateThread,NULL,NULL,eax,\
-		;                    NULL,NORMAL_PRIORITY_CLASS,\
-		;                    ADDR ThreadFlagID
-		;mov    hThreadFlag,eax
-		
-		;mov    eax,OFFSET Thread_G_Proc
-		;invoke CreateThread,NULL,NULL,eax,\
-		;                    NULL,NORMAL_PRIORITY_CLASS,\
-		;                    ADDR ThreadID_G
-		;mov    hThread_G,eax
-		
+		;##### Inicializando o jogo #####;
+        ;Aliens
         mov movidoPos.x, 0
         mov movidoPos.y, 0
 
         mov cl, 8
         call IniciaAliens
+
+        ;APAGAR DEPOIS
+        ;##########################
+        ;push eax
+        ;push ebx
+
+        ;xor eax, eax
+        ;mov ebx, OFFSET aliensX
+        ;add ebx, 4
+        ;forMorte:
+        ;    mov BYTE PTR[ebx], 255
+
+        ;    add ebx, 11
+        ;    inc eax
+        ;.if eax < 5
+        ;    jmp forMorte
+        ;.endif
+
+        ;pop ebx
+        ;pop eax
+        ;##########################
+
         call AtualizaLimites
+
+        mov movidoPos.x, 71 ;para centralizar
+
+        ;Jogador
+        mov jogadorPos.x, 317 ;para centralizar
+        mov jogadorPos.y, 628
 		
 		
     .elseif uMsg == WM_SIZE
-;    // obter o tamanho da janela
+    ;// obter o tamanho da janela
 		
     .elseif uMsg == WM_PAINT
         invoke BeginPaint,hWin,ADDR Ps
@@ -195,14 +199,26 @@ WndProc proc hWin   :DWORD,
         invoke EndPaint,hWin,ADDR Ps
         return 0
 
-   	    
-   .elseif uMsg==WM_FINISH
-        inc gTick	
-        .if gTick >= 25
-            mov gTick, 0
+    .elseif uMsg == WM_KEYDOWN
+        .if wParam == 37 ;Seta esquerda
+            mov dirJog, 1
+        .elseif wParam == 39 ;Seta direita
+            mov dirJog, 2
         .endif
 
-        call MovAliens
+    .elseif uMsg == WM_KEYUP
+        .if wParam == 37 || wParam == 39 ;Soltou uma das setas
+            mov dirJog, 0 ;Debe parar de se mover
+        .endif
+   	    
+    .elseif uMsg==WM_FINISH                      ;LOOP PRINCIPAL-----------------------------------
+        inc gTick	
+        .if gTick >= 48
+            mov gTick, 0
+            call MovAliens
+        .endif
+
+        call MovJog
 
         invoke InvalidateRect,hWnd,NULL,TRUE
 
@@ -246,7 +262,7 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
 	invoke SelectObject,memDC,hBmp  ; selecionei o novo bitmap
     mov hOld, eax         
  
-    ;#################################
+    ;##### Desenhando os aliens #####;
     mov eax, OFFSET aliensX
     xor ebx, ebx ;contador
     xor ecx, ecx ;auxiliar
@@ -256,10 +272,16 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
     forDesenhar:
         ;Descobrindo as posicoes de X e Y
         push edx
-        xor edx, edx ;serivra momentaneamente como auxiliar
+        xor edx, edx ;servira momentaneamente como auxiliar
 
         xor ecx, ecx
         mov cl, byte ptr[eax + ebx]
+
+        .if cl == 255 ;Verificando se o alien existe
+            pop edx
+            jmp finalLoopDesenho
+        .endif
+
         imul ecx, ecx, 6
         add ecx, movidoPos.x
         mov dl, limEsq
@@ -292,32 +314,23 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
         push eax
         push ebx
         push edx
-            INVOKE  TransparentBlt,hDC,printPos.x,printPos.y,36,24,memDC, ecx,0,36,24,CREF_TRANSPARENT 
+            INVOKE  TransparentBlt,hDC, printPos.x, printPos.y,36,24,memDC, ecx,0,36,24,CREF_TRANSPARENT 
         pop edx
         pop ebx
         pop eax
 
+        finalLoopDesenho:
         ;Verificando se devemos sair do loop
         inc ebx
         .if ebx < 55
             jmp forDesenhar
-        .endif
-    ;#################################      
+        .endif  
 
-    ;INVOKE  TransparentBlt,hDC,flagPos.x,flagPos.y,32,32,memDC,0,320,32,32,CREF_TRANSPARENT        
+    ;##### Desenhando o jogador #####;  
 
-	;INVOKE  TransparentBlt,hDC,100,80,32,32,memDC,0,0,32,32,CREF_TRANSPARENT
+        INVOKE  TransparentBlt,hDC, jogadorPos.x, jogadorPos.y,39,24,memDC, 0,24,39,24,CREF_TRANSPARENT
 
-
-    invoke SelectObject,hDC,hOld
-	
-	;invoke SelectObject,memDC,hBmp_G  ; selecionei o novo bitmap
-    ;mov hOld, eax         
-	;invoke BitBlt,hDC,100,40,22,32,memDC,0,0,SRCCOPY
-    ;INVOKE  TransparentBlt,hDC,garfieldPos.x,garfieldPos.y,22,32,memDC,g_sprite.x,g_sprite.y,22,32,CREF_TRANSPARENT3
-	
-	
-	invoke SelectObject,hDC,hOld
+    ;################################;
 	
     invoke DeleteDC,memDC
 
@@ -330,7 +343,7 @@ Paint_Proc endp
 
 ThreadProc PROC USES ecx Param:DWORD
 
-    invoke WaitForSingleObject,hEventStart,600 ;INFINITE          ;DELAY AQUI--------------------------------------
+    invoke WaitForSingleObject,hEventStart, 25 ;INFINITE          ;DELAY AQUI--------------------------------------
 
 	.IF eax == WAIT_TIMEOUT	
 	    invoke PostMessage,hWnd,WM_FINISH,NULL,NULL
@@ -349,5 +362,6 @@ ThreadProc ENDP
 ;Procs externas
 
 include AliensProc.ASM
+include JogadorProc.ASM
 
 end start

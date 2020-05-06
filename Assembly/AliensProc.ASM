@@ -34,8 +34,6 @@ IniciaAliens proc
             jmp forIni
         .endif
 
-    mov movidoPos.x, 71 ;para centralizar
-
     ret
 IniciaAliens endp
 
@@ -73,7 +71,9 @@ AtualizaLimites proc
             xor ebx, ebx
             inc eax
 
-            jmp forLimites
+            .if eax < 11
+                jmp forLimites
+            .endif
         .else
             add ebx, 11
 
