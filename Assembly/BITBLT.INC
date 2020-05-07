@@ -102,11 +102,24 @@
 
   ;Jogador
   jogadorPos POINT <>
+  tiroJogPos POINT <>
   larJog dw 39
   altJog dw 24
 
-  velJog db 5
+  velJog     db 5
+  velJogTiro db 10
   dirJog db 0 ;0 - parado, 1 - esq, 2 - dir
+
+  ;Explosoes (quantos ticks ficarao na tela)
+  exFimTela    db 0
+  exEntreTiros db 0
+  exAlien      db 0
+  exNaveMae    db 0
+
+  exFimTelaPos    POINT <>
+  exEntreTirosPos POINT <>
+  exAlienPos      POINT <>
+  exNaveMaePos    POINT <>
 
   ;Outros
   posicaoY db 0

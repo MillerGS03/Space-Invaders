@@ -187,6 +187,9 @@ WndProc proc hWin   :DWORD,
         ;Jogador
         mov jogadorPos.x, 317 ;para centralizar
         mov jogadorPos.y, 628
+
+        mov tiroJogPos.x, 2000 ;Valores impossiveis (2000)
+        mov tiroJogPos.y, 2000
 		
 		
     .elseif uMsg == WM_SIZE
@@ -206,6 +209,10 @@ WndProc proc hWin   :DWORD,
             mov dirJog, 2
         .endif
 
+        .if wParam == 32 ;Barra de espaco
+            call Atirar
+        .endif
+
     .elseif uMsg == WM_KEYUP
         .if wParam == 37 || wParam == 39 ;Soltou uma das setas
             mov dirJog, 0 ;Debe parar de se mover
@@ -219,6 +226,8 @@ WndProc proc hWin   :DWORD,
         .endif
 
         call MovJog
+        call MoverTiro
+        call ColisaoAliens
 
         invoke InvalidateRect,hWnd,NULL,TRUE
 
@@ -330,6 +339,20 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
 
         INVOKE  TransparentBlt,hDC, jogadorPos.x, jogadorPos.y,39,24,memDC, 0,24,39,24,CREF_TRANSPARENT
 
+        .if tiroJogPos.y != 2000 ;Tiro esta na tela
+            INVOKE  TransparentBlt,hDC, tiroJogPos.x, tiroJogPos.y, 3, 12,memDC, 259, 60, 3, 12,CREF_TRANSPARENT
+        .endif
+
+    ;################################;
+
+    ;##### Desenhando explosoes #####;  
+        ;call AnimaExplosoes
+
+        .if exFimTela != 0
+            INVOKE  TransparentBlt,hDC, exFimTelaPos.x, exFimTelaPos.y, 24, 24, memDC, 126, 48, 24, 24,CREF_TRANSPARENT
+            dec exFimTela
+        .endif
+
     ;################################;
 	
     invoke DeleteDC,memDC
@@ -363,5 +386,6 @@ ThreadProc ENDP
 
 include AliensProc.ASM
 include JogadorProc.ASM
+include ColisoesProc.ASM
 
 end start

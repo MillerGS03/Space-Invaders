@@ -38,6 +38,8 @@ IniciaAliens proc
 IniciaAliens endp
 
 AlienDestruido proc
+    ;edi contera o X do alien morto
+    mov BYTE PTR[edi], 255
     call AtualizaLimites
 
     ret
