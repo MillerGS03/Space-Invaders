@@ -42,19 +42,22 @@ AlienDestruido proc
     mov BYTE PTR[edi], 255
     call AtualizaLimites
 
+    mov tiroJogPos.x, 2000
+    mov tiroJogPos.y, 2000
+
     ret
 AlienDestruido endp
 
 AtualizaLimites proc
-    mov limEsq, 255
-    mov limDir, 255
-
     xor eax, eax ;X
     xor ebx, ebx ;Y
     xor ecx, ecx ;auxiliar para o vetor
     xor edx, edx ;dl - auxiliar, dh - limite antigo
 
-    mov dh, limEsq
+    mov dh, limEsq ;guardando para efetuar uma comparacao depois
+
+    mov limEsq, 255
+    mov limDir, 255
 
     forLimites:
         mov ecx, OFFSET aliensX
@@ -92,10 +95,15 @@ AtualizaLimites proc
     xor ecx, ecx ;se tornara auxiliar
 
     .if limEsq != dh ;o limite foi alterado
-        mov cl, dh
-        sub movidoPos.x, ecx
+        ;mov cl, dh
+        ;sub movidoPos.x, ecx
 
+        ;mov cl, limEsq
+        ;sub cl, dh
+        ;imul ecx, ecx, 6
+        ;add movidoPos.x, ecx
         mov cl, limEsq
+        sub cl, dh
         imul ecx, ecx, 6
         add movidoPos.x, ecx
     .endif

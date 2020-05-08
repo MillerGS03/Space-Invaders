@@ -15,10 +15,27 @@ ColisaoAliens proc
 
     forColiAli:
         ;##### Comparando X #####;
+        xor eax, eax
+        xor ecx, ecx
+
         mov ebx, tiroJogPos.x
         inc ebx ;estaremos usando apenas o meio do tiro como referencia
         mov cl, BYTE PTR[edi]
+
+        .if ecx == 255 ;alien ja foi destruido
+            jmp forColiAliFim
+        .endif
+
         imul ecx, ecx, 6
+
+        ;Descobrindo sua localizacao atual
+        add ecx, movidoPos.x
+        push eax
+            xor eax, eax
+            mov al, limEsq
+            imul eax, eax, 6
+            sub ecx, eax
+        pop eax
 
         ;Verificando o tamanho do alien
         .if dl < 11 ;molusco
@@ -45,9 +62,14 @@ ColisaoAliens proc
         .endif
 
         ;##### Comparando Y #####;
+        xor ecx, ecx
+        
         mov ebx, tiroJogPos.y
         mov cl, BYTE PTR[esi]
         imul ecx, ecx, 6
+
+        ;Descobrindo sua localizacao atual
+        add ecx, movidoPos.y
 
         ;Verificando se houve colisao
         .if ecx <= ebx ;tiro pode estar dentro do alien
@@ -62,7 +84,6 @@ ColisaoAliens proc
         .else
             jmp forColiAliFim
         .endif
-
 
         ;##### Terminando o Loop #####;
         forColiAliFim:
