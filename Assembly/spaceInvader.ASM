@@ -1,6 +1,6 @@
 ; #########################################################################
 
-    .386
+    .586
     .model flat, stdcall  ; 32 bit memory model
     option casemap :none  ; case sensitive
 
@@ -159,30 +159,18 @@ WndProc proc hWin   :DWORD,
         mov cl, 8
         call IniciaAliens
 
-        ;APAGAR DEPOIS
-        ;##########################
-        ;push eax
-        ;push ebx
-
-        ;xor eax, eax
-        ;mov ebx, OFFSET aliensX
-        ;add ebx, 4
-        ;forMorte:
-        ;    mov BYTE PTR[ebx], 255
-
-        ;    add ebx, 11
-        ;    inc eax
-        ;.if eax < 5
-        ;    jmp forMorte
-        ;.endif
-
-        ;pop ebx
-        ;pop eax
-        ;##########################
-
         call AtualizaLimites
 
         mov movidoPos.x, 71 ;para centralizar
+
+        mov ecx, OFFSET ultimosAliens
+        forIniciaUltimosAliens:
+            mov BYTE PTR[ecx], 4
+
+            inc ecx
+            .if BYTE PTR[ecx] != 6
+                jmp forIniciaUltimosAliens
+            .endif
 
         ;Jogador
         mov jogadorPos.x, 317 ;para centralizar
@@ -190,6 +178,16 @@ WndProc proc hWin   :DWORD,
 
         mov tiroJogPos.x, 2000 ;Valores impossiveis (2000)
         mov tiroJogPos.y, 2000
+
+        ;Aleatorizador
+        push eax
+        push edx
+
+        rdtsc
+        mov RandSeed, eax ;Aleatorizando o inicio da seed
+
+        pop edx
+        pop eax
 		
 		
     .elseif uMsg == WM_SIZE
@@ -223,6 +221,7 @@ WndProc proc hWin   :DWORD,
         .if gTick >= 48
             mov gTick, 0
             call MovAliens
+            call TiroAliens
         .endif
 
         call MovJog
@@ -353,6 +352,11 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
             dec exFimTela
         .endif
 
+        .if exAlien != 0
+            INVOKE  TransparentBlt,hDC, exAlienPos.x, exAlienPos.y, 36, 24, memDC, 216, 0, 36, 24,CREF_TRANSPARENT
+            dec exAlien
+        .endif
+
     ;################################;
 	
     invoke DeleteDC,memDC
@@ -387,5 +391,6 @@ ThreadProc ENDP
 include AliensProc.ASM
 include JogadorProc.ASM
 include ColisoesProc.ASM
+include PseudoRandomProc.ASM
 
 end start

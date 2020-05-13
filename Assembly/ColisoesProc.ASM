@@ -104,16 +104,3 @@ ColisaoAliens proc
 
     ret 0
 ColisaoAliens endp
-
-AnimaExplosoes proc
-    push ecx
-    xor ecx, ecx
-
-    .if exFimTela != 0 ;devemos ainda mostrar a explosao
-        dec exFimTela
-    .endif
-
-    pop ecx
-
-    ret 0
-AnimaExplosoes endp

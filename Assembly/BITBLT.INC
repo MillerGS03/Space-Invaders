@@ -97,8 +97,11 @@
   limEsq     db 0  ;guarda a coluna mais a esquerda com aliens
   limDir     db 0 ;guarda a coluna mais a direita com aliens
 
-  aliensX db "0123456789012345678901234567890123456789012345678901234", 255 ;posicoes X dos aliens
-  aliensY db "0123456789012345678901234567890123456789012345678901234", 255 ;posicoes Y dos aliens
+  aliensX db "0123456789012345678901234567890123456789012345678901234" ;posicoes X dos aliens
+  aliensY db "0123456789012345678901234567890123456789012345678901234" ;posicoes Y dos aliens
+
+  ultimosAliens   db "01234567890", 6 ;guarda os indices dos ultimos aliens
+  qtdColunasVivas db 11
 
   ;Jogador
   jogadorPos POINT <>
@@ -127,6 +130,8 @@
 
   printPos   POINT <>
   gTick      db 0
+
+  RandSeed    dd  ?
 
 .const 
 	WM_FINISH equ WM_USER+100h
