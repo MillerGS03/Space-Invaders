@@ -151,7 +151,7 @@ WndProc proc hWin   :DWORD,
 		                    ADDR ThreadID
 		mov    hThread,eax
 
-		;##### Inicializando o jogo #####;
+		                                                                    ;##### Inicializando o jogo #####;
         ;Aliens
         mov movidoPos.x, 0
         mov movidoPos.y, 0

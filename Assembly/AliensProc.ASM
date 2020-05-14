@@ -66,15 +66,21 @@ AlienDestruido proc
     mov exAlien, 2
 
     ;##### Atualizando vetor com os ultimos aliens #####;
-    xor eax, eax ;Contera a linha do alien
-    mov al, dl
-    xor edx, edx ;Contera a coluna do alien 
-    mov edx, 11
+    push eax
+    push ebx
+    push ecx
+    push edx
 
-    div edx
+    xor eax, eax ;Contera a linha do alien (quociente)
+    mov al, dl
+    xor edx, edx ;Contera a coluna do alien (resto)
+    xor ebx, ebx
+    mov ebx, 11
+
+    div ebx ;Efetuando a divisao
 
     ;Descobrindo a alien mais ao fim da coluna
-    mov ecx, ultimosAliens
+    mov ecx, OFFSET ultimosAliens
     add ecx, edx
     mov ebx, edi
 
@@ -84,7 +90,7 @@ AlienDestruido proc
             mov BYTE PTR[ecx], 255
             dec qtdColunasVivas
         .endif
-    .elseif BYTE PTR[ecx] != al
+    .elseif BYTE PTR[ecx] == al
         forAchaAlienMaisBaixo:
             sub ebx, 11
             dec al
@@ -104,6 +110,11 @@ AlienDestruido proc
 
         fimAchaAlienMaisBaixo:
     .endif
+
+    pop edx
+    pop ecx
+    pop ebx
+    pop eax
 
     ;##### Colocando o alien como destruido #####;
     mov BYTE PTR[edi], 255
@@ -239,39 +250,70 @@ MovAliens proc
 MovAliens endp
 
 TiroAliens proc
-    ;push edi
-    ;push esi
-
-    ;mov edi, OFFSET aliensX
-    ;mov esi, OFFSET aliensY
-
     xor eax, eax
     mov eax, 5 ;range de valores (20% de chance de dar um tiro quando os aliens se movem)
 
     call PseudoRandom ;eax contera o valor aleatorio
 
     .if eax == 0 ;O tiro sera dado!
-        ;aleatorizando um alien
-        xor ecx, ecx ;Auxiliar
-        xor edx, edx ;Contador de colunas existentes
-        mov eax, qtdColunasVivas
+        ;##### Aleatorizando um alien #####;
+        xor eax, eax
+        mov edx, OFFSET ultimosAliens ;Ponteiro do vetor
+        mov al, qtdColunasVivas
         call PseudoRandom
 
-        forAlienAtirador:
-            ;O alien esta vivo?
-            .if edx == eax
-                ;Achamos e devemos atirar!
+        inc al ;Permite que o codigo seguinte sirva para quando for escolhendo a primeira coluna valida
 
+        forAlienAtirador:
+            .if BYTE PTR[edx] != 255 ;O alien esta vivo?
+                dec al ;Mais uma coluna achada
             .endif
 
-            .if edx < qtdColunasVivas
+            .if al != 0 ;Ainda nao passamos
+                inc edx ;Avancando no vetor
                 jmp forAlienAtirador
-            .endif 
+            .endif
+
+        ;Ao sair do loop, temos a coluna que devemos usar para dar o tiro
+
+        ;##### Encontrando precisamente o alien #####;
+        xor ecx, ecx ;Auxiliar
+        mov cl, BYTE PTR[edx]
+        imul ecx, ecx, 11
+
+        ;Descobrindo a coluna
+        add ecx, edx ;Posicao final
+        sub ecx, OFFSET ultimosAliens ;Posicao inicial
+        ;Delta(posicao) = coluna
+
+        ;##### Atirando #####;
+        push ecx
+        mov eax, OFFSET aliensX
+        add eax, ecx
+        xor ecx, ecx
+        mov cl, BYTE PTR[eax]
+        imul ecx, ecx, 6
+        add ecx, movidoPos.x
+        mov tiroJogPos.x, ecx
+        add tiroJogPos.x, 18
+
+        xor ecx, ecx
+        mov cl, limEsq
+        sub tiroJogPos.x, ecx
+        pop ecx
+
+
+        mov eax, OFFSET aliensY
+        add eax, ecx
+        xor ecx, ecx
+        mov cl, BYTE PTR[eax]
+        imul ecx, ecx, 6
+        add ecx, movidoPos.y
+        mov tiroJogPos.y, ecx
+        add tiroJogPos.y, 20
+
 
     .endif
-
-    ;pop esi
-    ;pop edi
 
     ret
 TiroAliens endp
