@@ -249,13 +249,32 @@ MovAliens proc
     ret
 MovAliens endp
 
-TiroAliens proc
+AtirarAliens proc
+    ;Checando se ha algum slot de tiro disponivel
+    mov ecx, OFFSET tirosAliX
+    mov edx, OFFSET tirosAliY
+
+    forChecaSlot:
+        .if DWORD PTR[edx] == 2100
+            jmp fimAtirarAliens ;Nao existem slots disponiveis para o tiro
+        .elseif DWORD PTR[edx] != 2000 ;Slot ocupado
+            add ecx, 4 ;Andando em DWORD em DWORD
+            add edx, 4
+
+            jmp forChecaSlot ;Continuamos procurando
+        .endif
+
+    ;Eh possivel atirar
     xor eax, eax
-    mov eax, 5 ;range de valores (20% de chance de dar um tiro quando os aliens se movem)
+    mov eax, 3 ;range de valores (33% de chance de dar um tiro quando os aliens se movem)
 
     call PseudoRandom ;eax contera o valor aleatorio
 
     .if eax == 0 ;O tiro sera dado!
+        ;Guardando os ponteiros encontrados anteriormente
+        push edx
+        push ecx
+
         ;##### Aleatorizando um alien #####;
         xor eax, eax
         mov edx, OFFSET ultimosAliens ;Ponteiro do vetor
@@ -284,36 +303,82 @@ TiroAliens proc
         ;Descobrindo a coluna
         add ecx, edx ;Posicao final
         sub ecx, OFFSET ultimosAliens ;Posicao inicial
-        ;Delta(posicao) = coluna
+        ;Delta(posicao) = indice
 
         ;##### Atirando #####;
-        push ecx
+        ;Calculando a coordenada real de X
+        pop ebx  ;Recuperando o ponteiro da posicaoX do tiro
+        xor edx, edx ;auxiliar
+
         mov eax, OFFSET aliensX
         add eax, ecx
-        xor ecx, ecx
-        mov cl, BYTE PTR[eax]
-        imul ecx, ecx, 6
-        add ecx, movidoPos.x
-        mov tiroJogPos.x, ecx
-        add tiroJogPos.x, 18
+        mov dl, BYTE PTR[eax]
+        imul edx, edx, 6
+        add edx, movidoPos.x
+        mov DWORD PTR[ebx], edx
+        add DWORD PTR[ebx], 18 ;Centralizando
 
-        xor ecx, ecx
-        mov cl, limEsq
-        sub tiroJogPos.x, ecx
-        pop ecx
+        xor edx, edx
+        mov dl, limEsq
+        sub DWORD PTR[ebx], edx
 
+        ;Calculando a coordenada real de Y
+        pop ebx  ;Recuperando o ponteiro da posicaoY do tiro
 
         mov eax, OFFSET aliensY
         add eax, ecx
-        xor ecx, ecx
-        mov cl, BYTE PTR[eax]
-        imul ecx, ecx, 6
-        add ecx, movidoPos.y
-        mov tiroJogPos.y, ecx
-        add tiroJogPos.y, 20
-
-
+        mov dl, BYTE PTR[eax]
+        imul edx, edx, 6
+        add edx, movidoPos.y
+        mov DWORD PTR[ebx], edx
+        add DWORD PTR[ebx], 24 ;Centralizando
     .endif
 
+    fimAtirarAliens:
+
     ret
-TiroAliens endp
+AtirarAliens endp
+
+MoverTirosAliens proc
+    mov eax, OFFSET tirosAliX
+    mov ebx, maxAlturaJogavel ;Contera a altura da tela
+    xor ecx, ecx ;Contera a vel do tiro
+    mov edx, OFFSET tirosAliY
+
+    mov cl, velJogTiroAlien
+
+    forIniciaTirosAliens:
+        .if DWORD PTR[edx] != 2000
+            add DWORD PTR[edx], ecx
+
+            .if DWORD PTR[edx] > ebx ;Se cair no fim da tela
+                ;Iniciando a explosao
+                push ecx
+                xor ecx, ecx ;Sera auxiliar
+
+                mov ecx, DWORD PTR[eax]
+                sub ecx, 5 ;centralizando
+                mov exFimTelaTiroPos.x, ecx
+
+                mov ecx, DWORD PTR[edx]
+                mov exFimTelaTiroPos.y, ecx
+
+                mov exFimTelaTiro, 2
+
+                pop ecx
+
+                ;Indicando que o tiro saiu da tela
+                mov DWORD PTR[eax], 2000
+                mov DWORD PTR[edx], 2000
+            .endif
+        .endif
+
+        add eax, 4
+        add edx, 4
+
+        .if DWORD PTR[edx] != 2100 ;Fim do vetor
+            jmp forIniciaTirosAliens
+        .endif
+
+    ret
+MoverTirosAliens endp

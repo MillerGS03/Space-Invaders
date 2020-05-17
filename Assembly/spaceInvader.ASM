@@ -156,7 +156,7 @@ WndProc proc hWin   :DWORD,
         mov movidoPos.x, 0
         mov movidoPos.y, 0
 
-        mov cl, 8
+        mov cl, 18
         call IniciaAliens
 
         call AtualizaLimites
@@ -172,23 +172,31 @@ WndProc proc hWin   :DWORD,
                 jmp forIniciaUltimosAliens
             .endif
 
+        mov ecx, OFFSET tirosAliX
+        mov edx, OFFSET tirosAliY
+        
+        forIniciaTirosAliens:
+            mov DWORD PTR[ecx], 2000 ;Indica fora da tela
+            mov DWORD PTR[edx], 2000
+
+            add ecx, 4 ;Eh um DWROD, andamos de 4 em 4
+            add edx, 4
+
+            .if DWORD PTR[ecx] != 2100 ;Fim do vetor
+                jmp forIniciaTirosAliens
+            .endif
+
         ;Jogador
         mov jogadorPos.x, 317 ;para centralizar
-        mov jogadorPos.y, 628
+        mov jogadorPos.y, 648
 
         mov tiroJogPos.x, 2000 ;Valores impossiveis (2000)
         mov tiroJogPos.y, 2000
 
         ;Aleatorizador
-        push eax
-        push edx
-
         rdtsc
         mov RandSeed, eax ;Aleatorizando o inicio da seed
 
-        pop edx
-        pop eax
-		
 		
     .elseif uMsg == WM_SIZE
     ;// obter o tamanho da janela
@@ -213,7 +221,7 @@ WndProc proc hWin   :DWORD,
 
     .elseif uMsg == WM_KEYUP
         .if wParam == 37 || wParam == 39 ;Soltou uma das setas
-            mov dirJog, 0 ;Debe parar de se mover
+            mov dirJog, 0 ;Deve parar de se mover
         .endif
    	    
     .elseif uMsg==WM_FINISH                      ;LOOP PRINCIPAL-----------------------------------
@@ -221,12 +229,14 @@ WndProc proc hWin   :DWORD,
         .if gTick >= 48
             mov gTick, 0
             call MovAliens
-            call TiroAliens
+            call AtirarAliens
         .endif
 
         call MovJog
         call MoverTiro
+        call MoverTirosAliens
         call ColisaoAliens
+        call ColisaoTiroAliens
 
         invoke InvalidateRect,hWnd,NULL,TRUE
 
@@ -334,6 +344,33 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
             jmp forDesenhar
         .endif  
 
+    ;##### Desenhando os tiros dos aliens #####;
+        mov eax, OFFSET tirosAliX
+        mov ebx, OFFSET tirosAliY
+
+        forDesenhaTiroAliens:
+            mov ecx, DWORD PTR[eax]
+            mov printPos.x, ecx
+            mov ecx, DWORD PTR[ebx]
+            mov printPos.y, ecx
+
+            .if DWORD PTR[ebx] != 2000 ;Tiro esta na tela
+                push eax
+                push ebx
+                INVOKE  TransparentBlt,hDC, printPos.x, printPos.y, 9, 21, memDC, 0, 48, 9, 21, CREF_TRANSPARENT
+                pop ebx
+                pop eax
+            .endif
+
+            add eax, 4 ;Andando em DWORD em DWORD
+            add ebx, 4
+
+            .if DWORD PTR[eax] != 2100 ;Nao eh o fim do vetor
+                jmp forDesenhaTiroAliens
+            .endif
+
+    ;##########################################;
+
     ;##### Desenhando o jogador #####;  
 
         INVOKE  TransparentBlt,hDC, jogadorPos.x, jogadorPos.y,39,24,memDC, 0,24,39,24,CREF_TRANSPARENT
@@ -345,8 +382,6 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
     ;################################;
 
     ;##### Desenhando explosoes #####;  
-        ;call AnimaExplosoes
-
         .if exFimTela != 0
             INVOKE  TransparentBlt,hDC, exFimTelaPos.x, exFimTelaPos.y, 24, 24, memDC, 126, 48, 24, 24,CREF_TRANSPARENT
             dec exFimTela
@@ -355,6 +390,16 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
         .if exAlien != 0
             INVOKE  TransparentBlt,hDC, exAlienPos.x, exAlienPos.y, 36, 24, memDC, 216, 0, 36, 24,CREF_TRANSPARENT
             dec exAlien
+        .endif
+
+        .if exFimTelaTiro != 0
+            INVOKE  TransparentBlt,hDC, exFimTelaTiroPos.x, exFimTelaTiroPos.y, 18, 24, memDC, 108, 48, 18, 24,CREF_TRANSPARENT
+            dec exFimTelaTiro
+        .endif
+
+        .if exEntreTiros != 0
+            INVOKE  TransparentBlt,hDC, exEntreTirosPos.x, exEntreTirosPos.y, 18, 24, memDC, 108, 48, 18, 24,CREF_TRANSPARENT
+            dec exEntreTiros
         .endif
 
     ;################################;

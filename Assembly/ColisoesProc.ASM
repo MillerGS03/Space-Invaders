@@ -104,3 +104,79 @@ ColisaoAliens proc
 
     ret 0
 ColisaoAliens endp
+
+ColisaoTiroAliens proc
+    push esi ;Servira com auxiliar
+
+    ;##### Colisao entre Tiros #####;
+    xor eax, eax ;Guarda X do tiro do jogador
+    mov ebx, OFFSET tirosAliX
+    mov ecx, OFFSET tirosAliY
+    xor edx, edx ;Guarda Y do tiro do jogador
+
+    mov eax, tiroJogPos.x
+    mov edx, tiroJogPos.y
+
+    .if eax == 2000 ;Tiro nao esta na tela
+        jmp foraForColiTirosAli
+    .endif
+
+    forColiTirosAli:
+        ;Verificando X
+        .if eax >= DWORD PTR[ebx] ;Pode ser que houve colisao
+            mov esi, DWORD PTR[ebx]
+            add esi, 8
+
+            .if eax > esi ;Esta fora da area de colisao; caso contrario, houve colisao em X!
+                jmp fimForColiTirosAli
+            .endif
+        .else
+            jmp fimForColiTirosAli
+        .endif
+
+        ;Verificando Y
+        .if edx >= DWORD PTR[ecx] ;Pode ser que houve colisao
+            mov esi, DWORD PTR[ecx]
+            add esi, 21
+
+            .if edx <= esi ;Esta dentro da area de colisao, houve colisao!
+                ;Iniciando a explosao
+                mov esi, tiroJogPos.x
+                sub esi, 11 ;centralizando
+                mov exEntreTirosPos.x, esi
+
+                mov esi, tiroJogPos.y
+                sub esi, 15
+                mov exEntreTirosPos.y, esi
+
+                mov exEntreTiros, 2
+
+                ;Removendo os tiros da tela
+                mov DWORD PTR[ebx], 2000
+                mov DWORD PTR[ecx], 2000
+
+                mov tiroJogPos.x, 2000
+                mov tiroJogPos.y, 2000
+
+                ;Como o tiro do jogador nao esta mais na tela, podemos sair do loop
+                jmp foraForColiTirosAli
+            .endif
+        .else
+            jmp fimForColiTirosAli
+        .endif
+
+        ;Verificando o proximo tiro
+        fimForColiTirosAli:
+        add ebx, 4 ;Andando de DWORD em DWORD
+        add ecx, 4
+
+        .if DWORD PTR[ebx] != 2100 ;Ainda nao eh o fim do vetor
+            jmp forColiTirosAli
+        .endif
+
+    foraForColiTirosAli:
+
+    pop esi
+
+    ret
+ColisaoTiroAliens endp

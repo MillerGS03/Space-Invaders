@@ -82,7 +82,7 @@
 	EventStop BOOL FALSE
 
   largura DWORD 672
-  altura  DWORD 768
+  altura  DWORD 798
 
   ;##### Vars #####;
   ;Aliens
@@ -103,6 +103,11 @@
   ultimosAliens   db "01234567890", 6 ;guarda os indices dos ultimos aliens
   qtdColunasVivas db 11
 
+  tirosAliX dd "0123", "0123", "0123", 2100
+  tirosAliY dd "0123", "0123", "0123", 2100
+
+  velJogTiroAlien db 5
+
   ;Jogador
   jogadorPos POINT <>
   tiroJogPos POINT <>
@@ -114,19 +119,23 @@
   dirJog db 0 ;0 - parado, 1 - esq, 2 - dir
 
   ;Explosoes (quantos ticks ficarao na tela)
-  exFimTela    db 0
-  exEntreTiros db 0
-  exAlien      db 0
-  exNaveMae    db 0
+  exFimTela        db 0
+  exFimTelaTiro    db 0
+  exEntreTiros     db 0
+  exAlien          db 0
+  exNaveMae        db 0
 
-  exFimTelaPos    POINT <>
-  exEntreTirosPos POINT <>
-  exAlienPos      POINT <>
-  exNaveMaePos    POINT <>
+  exFimTelaPos        POINT <>
+  exFimTelaTiroPos    POINT <>
+  exEntreTirosPos     POINT <>
+  exAlienPos          POINT <>
+  exNaveMaePos        POINT <>
 
   ;Outros
   posicaoY db 0
   posicaoX db 0
+
+  maxAlturaJogavel dd 688
 
   printPos   POINT <>
   gTick      db 0
