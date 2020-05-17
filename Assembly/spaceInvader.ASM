@@ -271,6 +271,7 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
 
     LOCAL hOld:DWORD
     LOCAL memDC :DWORD
+    LOCAL hfont  :HFONT
  
     
     invoke CreateCompatibleDC,hDC
@@ -345,35 +346,83 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
         .endif  
 
     ;##### Desenhando os tiros dos aliens #####;
+    push esi
         mov eax, OFFSET tirosAliX
         mov ebx, OFFSET tirosAliY
+        mov ecx, OFFSET tirosSprt
+        mov edx, OFFSET tirosIndx
 
         forDesenhaTiroAliens:
-            mov ecx, DWORD PTR[eax]
-            mov printPos.x, ecx
-            mov ecx, DWORD PTR[ebx]
-            mov printPos.y, ecx
+            mov esi, DWORD PTR[eax]
+            mov printPos.x, esi
+            mov esi, DWORD PTR[ebx]
+            mov printPos.y, esi
 
             .if DWORD PTR[ebx] != 2000 ;Tiro esta na tela
                 push eax
                 push ebx
-                INVOKE  TransparentBlt,hDC, printPos.x, printPos.y, 9, 21, memDC, 0, 48, 9, 21, CREF_TRANSPARENT
+                push ecx
+                push edx
+
+                ;Descobrindo o sprite sendo usado
+                xor ebx, ebx
+                mov bl, BYTE PTR[ecx]
+                imul ebx, ebx, 36
+
+                ;Descobrindo o index sendo usado
+                xor eax, eax
+                mov al, BYTE PTR[edx]
+
+                push ebx
+                push edx
+
+                xor edx, edx
+                mov ebx, 3
+
+                div ebx ;A quantidade de index guardadas eh o triplo da que realmente 
+                      ;existem -> fazer a animacao ficar mais longa
+
+                pop edx
+                pop ebx
+
+                imul eax, eax, 9
+
+                ;Inicio do sprite
+                add eax, ebx
+
+                ;Printando de fato
+                INVOKE  TransparentBlt,hDC, printPos.x, printPos.y, 9, 21, memDC, eax, 48, 9, 21, CREF_TRANSPARENT
+
+                pop edx
+                pop ecx
                 pop ebx
                 pop eax
             .endif
 
+            ;Avancando a animacao do tiro
+            inc BYTE PTR[edx]
+
+            .if BYTE PTR[edx] == 11
+                mov BYTE PTR[edx], 0
+            .endif
+
             add eax, 4 ;Andando em DWORD em DWORD
             add ebx, 4
+            inc ecx
+            inc edx
 
             .if DWORD PTR[eax] != 2100 ;Nao eh o fim do vetor
                 jmp forDesenhaTiroAliens
             .endif
 
+    pop esi
     ;##########################################;
 
     ;##### Desenhando o jogador #####;  
 
-        INVOKE  TransparentBlt,hDC, jogadorPos.x, jogadorPos.y,39,24,memDC, 0,24,39,24,CREF_TRANSPARENT
+        .if jogadorPos.y != 2000 ;Jogador esta na tela
+            INVOKE  TransparentBlt,hDC, jogadorPos.x, jogadorPos.y,39,24,memDC, 0,24,39,24,CREF_TRANSPARENT
+        .endif
 
         .if tiroJogPos.y != 2000 ;Tiro esta na tela
             INVOKE  TransparentBlt,hDC, tiroJogPos.x, tiroJogPos.y, 3, 12,memDC, 259, 60, 3, 12,CREF_TRANSPARENT
@@ -402,7 +451,62 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
             dec exEntreTiros
         .endif
 
+        .if exJogador != 0
+            .if exJogadorAnima < 3
+                INVOKE  TransparentBlt,hDC, exJogadorPos.x, exJogadorPos.y, 48, 24, memDC, 39, 24, 48, 24,CREF_TRANSPARENT
+            .else 
+                INVOKE  TransparentBlt,hDC, exJogadorPos.x, exJogadorPos.y, 48, 24, memDC, 87, 24, 48, 24,CREF_TRANSPARENT
+            .endif
+
+            ;Mudando a animacao da explosao
+            inc exJogadorAnima
+
+            .if exJogadorAnima == 6
+                mov exJogadorAnima, 0
+            .endif
+
+            dec exJogador
+        .endif
+
     ;################################;
+
+    ;### Desenhando a UI ###;
+        INVOKE  TransparentBlt,hDC, 0, maxAlturaJogavel, largura, 3, memDC, 15, 31, 1, 1,CREF_TRANSPARENT
+
+        invoke CreateFont,24,16,0,0,700,0,0,0,OEM_CHARSET,\
+                                       OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,\
+                                       DEFAULT_QUALITY,DEFAULT_PITCH or FF_SCRIPT,\
+                                       ADDR FontName
+
+        invoke SelectObject, hDC, eax
+        mov    hfont, eax
+
+        ;Topo da tela
+        mov rect.left, 0
+        mov ecx, largura
+        mov rect.right, ecx
+        mov rect.top, 10
+        mov rect.bottom, 40
+
+        RGB 255, 255, 255
+        invoke SetTextColor, hDC, eax
+        RGB 0, 0, 0
+        invoke SetBkColor, hDC, eax
+
+        invoke DrawText, hDC, ADDR format0, -1, ADDR rect, DT_SINGLELINE or DT_CENTER
+
+        mov rect.top, 30
+        mov rect.bottom, 50
+
+        invoke DrawText, hDC, ADDR format1, -1, ADDR rect, DT_SINGLELINE or DT_CENTER
+
+        ;Final da tela
+        mov rect.left, 470
+        mov rect.top, 700
+        mov rect.bottom, 730
+
+        invoke DrawText, hDC, ADDR format2, -1, ADDR rect, DT_SINGLELINE
+     ;#######################;
 	
     invoke DeleteDC,memDC
 

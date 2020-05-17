@@ -176,6 +176,75 @@ ColisaoTiroAliens proc
 
     foraForColiTirosAli:
 
+    ;##### Colisao entre Tiros e jogador #####;
+    xor eax, eax ;Guarda X do do jogador
+    mov ebx, OFFSET tirosAliX
+    mov ecx, OFFSET tirosAliY
+    xor edx, edx ;Guarda Y do do jogador
+
+    mov eax, jogadorPos.x
+    mov edx, jogadorPos.y
+
+    .if eax == 2000 ;Jogador nao esta na tela
+        jmp foraForColiTiroJog
+    .endif
+
+    forColiTiroJog:
+        ;Verificando X
+        .if DWORD PTR[ebx] >= eax ;Pode ser que houve colisao
+            mov esi, eax
+            add esi, 38
+
+            .if esi < DWORD PTR[ebx] ;Esta fora da area de colisao; caso contrario, houve colisao em X!
+                jmp fimForColiTiroJog
+            .endif
+        .else
+            jmp fimForColiTiroJog
+        .endif
+
+        ;Verificando Y
+        .if DWORD PTR[ecx] >= edx ;Pode ser que houve colisao
+            mov esi, edx
+            add esi, 23
+
+            .if DWORD PTR[ecx] <= esi ;Esta dentro da area de colisao, houve colisao!
+                ;Iniciando a explosao
+                mov esi, jogadorPos.x
+                sub esi, 5 ;centralizando
+                mov exJogadorPos.x, esi
+
+                mov esi, jogadorPos.y
+                mov exJogadorPos.y, esi
+
+                mov exJogador, 12
+
+                ;Removendo os tiros da tela
+                mov DWORD PTR[ebx], 2000
+                mov DWORD PTR[ecx], 2000
+
+                mov jogadorPos.x, 2000
+                mov jogadorPos.y, 2000
+
+                dec vidas
+
+                ;Jogador nao esta mais na tela, podemos sair do loop
+                jmp foraForColiTiroJog
+            .endif
+        .else
+            jmp fimForColiTiroJog
+        .endif
+
+        ;Verificando o proximo tiro
+        fimForColiTiroJog:
+        add ebx, 4 ;Andando de DWORD em DWORD
+        add ecx, 4
+
+        .if DWORD PTR[ebx] != 2100 ;Ainda nao eh o fim do vetor
+            jmp forColiTiroJog
+        .endif
+
+    foraForColiTiroJog:
+
     pop esi
 
     ret

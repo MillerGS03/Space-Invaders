@@ -251,6 +251,7 @@ MovAliens endp
 
 AtirarAliens proc
     ;Checando se ha algum slot de tiro disponivel
+    mov ebx, OFFSET tirosSprt
     mov ecx, OFFSET tirosAliX
     mov edx, OFFSET tirosAliY
 
@@ -260,6 +261,7 @@ AtirarAliens proc
         .elseif DWORD PTR[edx] != 2000 ;Slot ocupado
             add ecx, 4 ;Andando em DWORD em DWORD
             add edx, 4
+            inc ebx
 
             jmp forChecaSlot ;Continuamos procurando
         .endif
@@ -272,6 +274,7 @@ AtirarAliens proc
 
     .if eax == 0 ;O tiro sera dado!
         ;Guardando os ponteiros encontrados anteriormente
+        push ebx
         push edx
         push ecx
 
@@ -332,6 +335,17 @@ AtirarAliens proc
         add edx, movidoPos.y
         mov DWORD PTR[ebx], edx
         add DWORD PTR[ebx], 24 ;Centralizando
+
+        ;Aleatorizando o sprite do tiro
+        pop ebx ;Recuperando o ponteiro do sprite do tiro
+        xor eax, eax
+
+        mov eax, 3
+        call PseudoRandom
+
+        mov BYTE PTR[ebx], al
+
+
     .endif
 
     fimAtirarAliens:
@@ -344,6 +358,8 @@ MoverTirosAliens proc
     mov ebx, maxAlturaJogavel ;Contera a altura da tela
     xor ecx, ecx ;Contera a vel do tiro
     mov edx, OFFSET tirosAliY
+
+    sub ebx, 24 ;Para considerar a "cabeca" do tiro
 
     mov cl, velJogTiroAlien
 

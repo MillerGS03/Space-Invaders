@@ -105,6 +105,8 @@
 
   tirosAliX dd "0123", "0123", "0123", 2100
   tirosAliY dd "0123", "0123", "0123", 2100
+  tirosSprt db      0,      0,      0
+  tirosIndx db      0,      0,      0
 
   velJogTiroAlien db 5
 
@@ -124,22 +126,36 @@
   exEntreTiros     db 0
   exAlien          db 0
   exNaveMae        db 0
+  exJogador        db 0
+
+  exJogadorAnima   db 0
 
   exFimTelaPos        POINT <>
   exFimTelaTiroPos    POINT <>
   exEntreTirosPos     POINT <>
   exAlienPos          POINT <>
   exNaveMaePos        POINT <>
+  exJogadorPos        POINT <>
 
-  ;Outros
+  ;Print
+  printPos   POINT <>
+
   posicaoY db 0
   posicaoX db 0
 
+  rect RECT<>
+  format0 db 'SCORE<1>  HI-SCORE  SCORE<2>', 0
+  format1 db '           0000             ', 0
+  format2 db 'CREDIT 00', 0
+  buffer db 20 dup (0)
+
+  FontName db "Courier New", 0
+
+  ;Outros
+  vidas db 3
+  score dw 0
   maxAlturaJogavel dd 688
-
-  printPos   POINT <>
   gTick      db 0
-
   RandSeed    dd  ?
 
 .const 
