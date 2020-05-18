@@ -15,12 +15,14 @@
     INCLUDE \Masm32\Include\oleaut32.inc
     INCLUDE \Masm32\Macros\macros.asm
 
+    include \Masm32\include\winmm.inc 
+
 
 
 ;     libraries
 ;     ~~~~~~~~~
     includelib \MASM32\LIB\masm32.lib
-	includelib \MASM32\LIB\gdi32.lib
+  	includelib \MASM32\LIB\gdi32.lib
     includelib \MASM32\LIB\user32.lib
     includelib \MASM32\LIB\kernel32.lib
     includelib \MASM32\LIB\Comctl32.lib
@@ -31,6 +33,7 @@
     INCLUDELIB \Masm32\Lib\oleaut32.lib
     INCLUDELIB \Masm32\Lib\msvcrt.lib
     INCLUDELIB \Masm32\Lib\masm32.lib
+    includelib \Masm32\lib\winmm.lib
 
 ; #########################################################################
 
@@ -42,6 +45,7 @@
     TopXY        PROTO :DWORD,:DWORD
     FillBuffer   PROTO :DWORD,:DWORD,:BYTE
     Paint_Proc   PROTO :DWORD,:DWORD
+    PlaySound    PROTO    STDCALL :DWORD, :DWORD, :DWORD
 
     ;=============
     ; Local macros
@@ -110,6 +114,12 @@
 
   velJogTiroAlien db 5
 
+  ;Nave Misteriosa
+  naveMisPos   POINT <>
+  naveMisDelay dw 0
+  velNaveMis   db 3
+  dirNaveMis   db 0 ;0 - Esquerda, 1 - Direita
+
   ;Jogador
   jogadorPos POINT <>
   tiroJogPos POINT <>
@@ -125,7 +135,7 @@
   exFimTelaTiro    db 0
   exEntreTiros     db 0
   exAlien          db 0
-  exNaveMae        db 0
+  exNaveMis        db 0
   exJogador        db 0
 
   exJogadorAnima   db 0
@@ -134,7 +144,7 @@
   exFimTelaTiroPos    POINT <>
   exEntreTirosPos     POINT <>
   exAlienPos          POINT <>
-  exNaveMaePos        POINT <>
+  exNaveMisPos        POINT <>
   exJogadorPos        POINT <>
 
   ;Print
@@ -163,6 +173,31 @@
   maxAlturaJogavel dd 688
   gTick      db 0
   RandSeed    dd  ?
+
+  ;##### Sons ####;
+  som0 db "shoot.wav", 0
+  som1 db "explosion.wav", 0
+  som2 db "fastinvader1.wav", 0
+  som3 db "fastinvader2.wav", 0
+  som4 db "fastinvader3.wav", 0
+  som5 db "fastinvader4.wav", 0
+  som6 db "invaderkilled.wav", 0
+  som7 db "ufo.wav", 0
+
+  ; - MCI_OPEN_PARMS Structure ( API=mciSendCommand ) -
+  open_dwCallback       dd ?
+  open_wDeviceID        dd ?
+  open_lpstrDeviceType  dd ?
+  open_lpstrElementName dd ?
+  open_lpstrAlias       dd ?
+
+  ; - MCI_GENERIC_PARMS Structure ( API=mciSendCommand ) -
+  generic_dwCallback    dd ?
+
+  ; - MCI_PLAY_PARMS Structure ( API=mciSendCommand ) -
+  play_dwCallback       dd ?
+  play_dwFrom           dd ?
+  play_dwTo             dd ?
 
 .const 
 	WM_FINISH equ WM_USER+100h

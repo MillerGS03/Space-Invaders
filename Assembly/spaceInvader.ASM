@@ -186,6 +186,12 @@ WndProc proc hWin   :DWORD,
                 jmp forIniciaTirosAliens
             .endif
 
+        ;Nave misteriosa
+        mov naveMisPos.x, 2000
+        mov naveMisPos.y, 2000
+
+        call TimerNaveMis
+
         ;Jogador
         mov jogadorPos.x, 317 ;para centralizar
         mov jogadorPos.y, 648
@@ -237,10 +243,14 @@ WndProc proc hWin   :DWORD,
         .endif
 
         call MovJog
+        call MoverNaveMis
         call MoverTiro
         call MoverTirosAliens
         call ColisaoAliens
+        call ColisaoNaveMis
         call ColisaoTiroAliens
+
+        call MostrarNaveMis
 
         call Respawn
 
@@ -436,9 +446,17 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
 
     ;################################;
 
+    ;##### Desenhando a Nave Misteriosa #####;  
+
+        .if naveMisPos.x != 2000 ;Jogador esta na tela
+            INVOKE  TransparentBlt, hDC, naveMisPos.x, naveMisPos.y, 48, 21, memDC, 142, 27, 48, 21, CREF_TRANSPARENT
+        .endif
+
+    ;########################################;
+
     ;##### Desenhando explosoes #####;  
         .if exFimTela != 0
-            INVOKE  TransparentBlt,hDC, exFimTelaPos.x, exFimTelaPos.y, 24, 24, memDC, 126, 48, 24, 24,CREF_TRANSPARENT
+            INVOKE  TransparentBlt,hDC, exFimTelaPos.x, exFimTelaPos.y, 24, 24, memDC, 126, 48, 24, 24, CREF_TRANSPARENT
             dec exFimTela
         .endif
 
@@ -455,6 +473,11 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
         .if exEntreTiros != 0
             INVOKE  TransparentBlt,hDC, exEntreTirosPos.x, exEntreTirosPos.y, 18, 24, memDC, 108, 48, 18, 24,CREF_TRANSPARENT
             dec exEntreTiros
+        .endif
+
+        .if exNaveMis != 0
+            INVOKE  TransparentBlt,hDC, exNaveMisPos.x, exNaveMisPos.y, 63, 24, memDC, 198, 24, 63, 24,CREF_TRANSPARENT
+            dec exNaveMis
         .endif
 
         .if exJogador != 0
@@ -562,6 +585,7 @@ ThreadProc ENDP
 ;Procs externas
 
 include AliensProc.ASM
+include NaveMisProc.ASM
 include JogadorProc.ASM
 include ColisoesProc.ASM
 include PseudoRandomProc.ASM

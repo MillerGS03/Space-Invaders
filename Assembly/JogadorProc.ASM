@@ -31,9 +31,13 @@ MovJog endp
 Atirar proc
     .if tiroJogPos.y == 2000 ;Tiro nao existe
         push ecx
+
+        invoke PlaySound, ADDR som0, NULL, SND_FILENAME or SND_ASYNC
+
         xor ecx, ecx ;auxiliar
 
         mov ecx, jogadorPos.x
+
         add ecx, 18 ;centralizando o tiro
         mov tiroJogPos.x, ecx
 

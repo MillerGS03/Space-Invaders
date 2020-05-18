@@ -105,6 +105,52 @@ ColisaoAliens proc
     ret 0
 ColisaoAliens endp
 
+ColisaoNaveMis proc
+    mov eax, naveMisPos.x
+    mov ebx, naveMisPos.y
+
+    .if tiroJogPos.x != 2000 ;Tiro existe
+        .if tiroJogPos.x >= eax && tiroJogPos.y >= ebx ;Pode ter ocorrido colisao
+            add eax, 47 ;Fim da nave horizontalmente
+            add ebx, 20 ;Fim da nave verticalmente
+
+            .if tiroJogPos.x <= eax && tiroJogPos.y <= ebx ;Houve colisao!
+                ;Recebendo a score aleatoria
+                mov eax, 6
+                call PseudoRandom
+                inc eax ;Valor minimo
+
+                imul eax, eax, 50
+                add score, ax
+
+                ;Animando a explosao
+                mov eax, naveMisPos.x
+                sub eax, 7 ;Centralizando
+                mov exNaveMisPos.x, eax
+
+                mov eax, naveMisPos.y
+                add eax, 2 ;Centralizando
+                mov exNaveMisPos.y, eax
+
+                mov exNaveMis, 6
+
+                ;Removendo o tiro
+                mov tiroJogPos.x, 2000
+                mov tiroJogPos.y, 2000
+
+                ;Removendo a nave
+                mov naveMisPos.x, 2000
+                mov naveMisPos.y, 2000
+
+                ;Fazendo com que a nave possa reaparecer
+                call TimerNaveMis
+            .endif
+        .endif
+    .endif
+
+    ret
+ColisaoNaveMis endp
+
 ColisaoTiroAliens proc
     push esi ;Servira com auxiliar
 

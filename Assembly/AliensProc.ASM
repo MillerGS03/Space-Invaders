@@ -272,9 +272,9 @@ AtirarAliens proc
     mov edx, OFFSET tirosAliY
 
     forChecaSlot:
-        .if DWORD PTR[edx] == 2100
+        .if DWORD PTR[ecx] == 2100
             jmp fimAtirarAliens ;Nao existem slots disponiveis para o tiro
-        .elseif DWORD PTR[edx] != 2000 ;Slot ocupado
+        .elseif DWORD PTR[ecx] != 2000 ;Slot ocupado
             add ecx, 4 ;Andando em DWORD em DWORD
             add edx, 4
             inc ebx
@@ -284,7 +284,7 @@ AtirarAliens proc
 
     ;Eh possivel atirar
     xor eax, eax
-    mov eax, 3 ;range de valores (33% de chance de dar um tiro quando os aliens se movem)
+    mov eax, 0 ;range de valores (33% de chance de dar um tiro quando os aliens se movem)
 
     call PseudoRandom ;eax contera o valor aleatorio
 
@@ -339,10 +339,12 @@ AtirarAliens proc
 
         xor edx, edx
         mov dl, limEsq
+        imul edx, edx, 6
         sub DWORD PTR[ebx], edx
 
         ;Calculando a coordenada real de Y
         pop ebx  ;Recuperando o ponteiro da posicaoY do tiro
+        xor edx, edx
 
         mov eax, OFFSET aliensY
         add eax, ecx
