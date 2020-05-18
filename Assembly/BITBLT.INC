@@ -147,12 +147,18 @@
   format0 db 'SCORE<1>  HI-SCORE  SCORE<2>', 0
   format1 db '           0000             ', 0
   format2 db 'CREDIT 00', 0
+  format3 db '%d', 0
+  format4 db '%04d', 0
   buffer db 20 dup (0)
 
   FontName db "Courier New", 0
 
   ;Outros
   vidas db 3
+  delayRespawn db 0
+
+  delayAliens db 45
+
   score dw 0
   maxAlturaJogavel dd 688
   gTick      db 0

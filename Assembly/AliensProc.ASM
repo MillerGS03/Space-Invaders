@@ -42,6 +42,22 @@ AlienDestruido proc
     ;esi contera o Y do alien morto
     ;dl  contera o indice do alien morto
 
+    ;#### Aumentando a velocidade dos aliens ####;
+    .if dl < 11
+        sub delayAliens, 2
+    .elseif dl < 33
+        dec delayAliens
+    .endif
+
+    ;#### Incrementando a pontuacao ####;
+    .if dl < 11
+        add score, 30
+    .elseif dl < 33
+        add score, 20
+    .else
+        add score, 10
+    .endif
+
     ;##### Iniciando a explosao #####;
     xor ecx, ecx
     mov cl, BYTE PTR[edi]

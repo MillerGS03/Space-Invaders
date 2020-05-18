@@ -209,14 +209,16 @@ WndProc proc hWin   :DWORD,
         return 0
 
     .elseif uMsg == WM_KEYDOWN
-        .if wParam == 37 ;Seta esquerda
-            mov dirJog, 1
-        .elseif wParam == 39 ;Seta direita
-            mov dirJog, 2
-        .endif
+        .if jogadorPos.y != 2000 ;Esta vivo
+            .if wParam == 37 ;Seta esquerda
+                mov dirJog, 1
+            .elseif wParam == 39 ;Seta direita
+                mov dirJog, 2
+            .endif
 
-        .if wParam == 32 ;Barra de espaco
-            call Atirar
+            .if wParam == 32 ;Barra de espaco
+                call Atirar
+            .endif
         .endif
 
     .elseif uMsg == WM_KEYUP
@@ -225,8 +227,10 @@ WndProc proc hWin   :DWORD,
         .endif
    	    
     .elseif uMsg==WM_FINISH                      ;LOOP PRINCIPAL-----------------------------------
-        inc gTick	
-        .if gTick >= 48
+        inc gTick
+        mov al, delayAliens
+
+        .if gTick >= al
             mov gTick, 0
             call MovAliens
             call AtirarAliens
@@ -237,6 +241,8 @@ WndProc proc hWin   :DWORD,
         call MoverTirosAliens
         call ColisaoAliens
         call ColisaoTiroAliens
+
+        call Respawn
 
         invoke InvalidateRect,hWnd,NULL,TRUE
 
@@ -500,12 +506,30 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
 
         invoke DrawText, hDC, ADDR format1, -1, ADDR rect, DT_SINGLELINE or DT_CENTER
 
+        mov rect.left, 140
+
+        invoke wsprintf, offset buffer, offset format4, score
+        invoke DrawText, hDC, ADDR buffer, -1, ADDR rect, DT_SINGLELINE
+
         ;Final da tela
         mov rect.left, 470
-        mov rect.top, 700
+        mov rect.top, 703
         mov rect.bottom, 730
 
         invoke DrawText, hDC, ADDR format2, -1, ADDR rect, DT_SINGLELINE
+
+        mov rect.left, 30
+
+        invoke wsprintf, offset buffer, offset format3, vidas
+        invoke DrawText, hDC, ADDR buffer, -1, ADDR rect, DT_SINGLELINE
+
+        .if vidas >= 3
+            INVOKE  TransparentBlt,hDC, 111, 700,39,24,memDC, 0,24,39,24,CREF_TRANSPARENT
+        .endif
+
+        .if vidas >= 2
+            INVOKE  TransparentBlt,hDC, 65, 700,39,24,memDC, 0,24,39,24,CREF_TRANSPARENT
+        .endif
      ;#######################;
 	
     invoke DeleteDC,memDC

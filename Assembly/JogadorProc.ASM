@@ -74,3 +74,17 @@ MoverTiro proc
 
     ret 0
 MoverTiro endp
+
+Respawn proc
+   .if vidas != 0 && delayRespawn > 0
+        dec delayRespawn
+
+        .if delayRespawn == 0
+            ;Reaparecendo
+            mov jogadorPos.x, 0
+            mov jogadorPos.y, 648
+        .endif
+   .endif
+
+    ret
+Respawn endp

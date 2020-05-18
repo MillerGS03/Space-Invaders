@@ -225,6 +225,7 @@ ColisaoTiroAliens proc
                 mov jogadorPos.x, 2000
                 mov jogadorPos.y, 2000
 
+                mov delayRespawn, 125
                 dec vidas
 
                 ;Jogador nao esta mais na tela, podemos sair do loop
