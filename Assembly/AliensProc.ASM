@@ -42,6 +42,11 @@ AlienDestruido proc
     ;esi contera o Y do alien morto
     ;dl  contera o indice do alien morto
 
+    ;#### Tocando o efeito sonoro ####;
+    mPush
+    invoke PlaySound, ADDR som6, NULL, SND_FILENAME or SND_ASYNC
+    mPop
+
     ;#### Aumentando a velocidade dos aliens ####;
     .if dl < 11
         sub delayAliens, 2
@@ -82,10 +87,7 @@ AlienDestruido proc
     mov exAlien, 2
 
     ;##### Atualizando vetor com os ultimos aliens #####;
-    push eax
-    push ebx
-    push ecx
-    push edx
+    mPush
 
     xor eax, eax ;Contera a linha do alien (quociente)
     mov al, dl
@@ -127,10 +129,7 @@ AlienDestruido proc
         fimAchaAlienMaisBaixo:
     .endif
 
-    pop edx
-    pop ecx
-    pop ebx
-    pop eax
+    mPop
 
     ;##### Colocando o alien como destruido #####;
     mov BYTE PTR[edi], 255
@@ -225,32 +224,35 @@ MovAliens proc
 
         xor ecx, ecx
         .if eax < largura
+            ;Movendo para o lado
             mov cl, velAli
             add movidoPos.x, ecx
         .else
+            ;Movendo para baixo
             mov cl, altAli
             imul ecx, ecx, 6
+            add ecx, 2 ;espacamento entre os aliens
+
+            ;edx
+
+            .if ecx > 
             add movidoPos.y, ecx
-            add movidoPos.y, 2 ;espacamento entre os aliens
 
             mov velDir, 1
         .endif
     .else ;vel eh negativa
         mov eax, movidoPos.x
-        ;mov cl, limEsq
-        ;imul ecx, ecx, 6 ;colocando a real posicao
-        ;add eax, ecx ;agora eax contera o primeiro pixel
-                        ;do primeiro alien mais a esquerda
-
-        ;xor ecx, ecx
+        
         .if eax > 11
+            ;Movendo para o lado
             mov cl, velAli
             sub movidoPos.x, ecx
         .else
+            ;Movendo para baixo
             mov cl, altAli
             imul ecx, ecx, 6
+            add ecx, 2 ;espacamento entre os aliens
             add movidoPos.y, ecx
-            add movidoPos.y, 2 ;espacamento entre os aliens
 
             mov velDir, 0
         .endif
@@ -284,7 +286,7 @@ AtirarAliens proc
 
     ;Eh possivel atirar
     xor eax, eax
-    mov eax, 0 ;range de valores (33% de chance de dar um tiro quando os aliens se movem)
+    mov eax, 3 ;range de valores (33% de chance de dar um tiro quando os aliens se movem)
 
     call PseudoRandom ;eax contera o valor aleatorio
 

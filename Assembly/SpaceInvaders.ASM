@@ -190,10 +190,10 @@ WndProc proc hWin   :DWORD,
         mov naveMisPos.x, 2000
         mov naveMisPos.y, 2000
 
-        call TimerNaveMis
+        ;call TimerNaveMis
 
         ;Jogador
-        mov jogadorPos.x, 317 ;para centralizar
+        mov jogadorPos.x, 0
         mov jogadorPos.y, 648
 
         mov tiroJogPos.x, 2000 ;Valores impossiveis (2000)
@@ -346,13 +346,9 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
         add cl, indexAli
 
         ;Printando o sprite
-        push eax
-        push ebx
-        push edx
+        mPush
             INVOKE  TransparentBlt,hDC, printPos.x, printPos.y,36,24,memDC, ecx,0,36,24,CREF_TRANSPARENT 
-        pop edx
-        pop ebx
-        pop eax
+        mPop
 
         finalLoopDesenho:
         ;Verificando se devemos sair do loop
@@ -375,10 +371,7 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
             mov printPos.y, esi
 
             .if DWORD PTR[ebx] != 2000 ;Tiro esta na tela
-                push eax
-                push ebx
-                push ecx
-                push edx
+                mPush
 
                 ;Descobrindo o sprite sendo usado
                 xor ebx, ebx
@@ -409,10 +402,7 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
                 ;Printando de fato
                 INVOKE  TransparentBlt,hDC, printPos.x, printPos.y, 9, 21, memDC, eax, 48, 9, 21, CREF_TRANSPARENT
 
-                pop edx
-                pop ecx
-                pop ebx
-                pop eax
+                mPop
             .endif
 
             ;Avancando a animacao do tiro
@@ -478,6 +468,11 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
         .if exNaveMis != 0
             INVOKE  TransparentBlt,hDC, exNaveMisPos.x, exNaveMisPos.y, 63, 24, memDC, 198, 24, 63, 24,CREF_TRANSPARENT
             dec exNaveMis
+
+            ;Quando a explosao sumir, a score recebida deve ser mostrada na tela
+            .if exNaveMis == 0
+                mov tempoMostraScore, 60
+            .endif
         .endif
 
         .if exJogador != 0
@@ -552,6 +547,27 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
 
         .if vidas >= 2
             INVOKE  TransparentBlt,hDC, 65, 700,39,24,memDC, 0,24,39,24,CREF_TRANSPARENT
+        .endif
+
+        ;Score da nave misteriosa
+        .if tempoMostraScore != 0
+            mov ecx, exNaveMisPos.x
+            add ecx, 10               ;Centralizando a score
+            mov rect.left, ecx
+            add ecx, 100
+            mov rect.right, ecx
+            mov ecx, exNaveMisPos.y
+            mov rect.top, ecx
+            add ecx, 70
+            mov rect.bottom, ecx
+
+            RGB 254, 29, 30 ;Cor da nave misteriosa
+            invoke SetTextColor, hDC, eax
+
+            invoke wsprintf, offset buffer, offset format3, mostraScore
+            invoke DrawText, hDC, ADDR buffer, -1, ADDR rect, DT_SINGLELINE
+
+            dec tempoMostraScore
         .endif
      ;#######################;
 	

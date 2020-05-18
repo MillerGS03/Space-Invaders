@@ -1,10 +1,5 @@
 ColisaoAliens proc
-    push eax
-    push ebx
-    push ecx
-    push edx
-    push edi
-    push esi
+    mPush
 
     mov edi, OFFSET aliensX
     mov esi, OFFSET aliensY
@@ -95,12 +90,7 @@ ColisaoAliens proc
             jmp forColiAli
         .endif
 
-    pop esi
-    pop edi
-    pop edx
-    pop ecx
-    pop ebx
-    pop eax
+    mPop
 
     ret 0
 ColisaoAliens endp
@@ -115,6 +105,11 @@ ColisaoNaveMis proc
             add ebx, 20 ;Fim da nave verticalmente
 
             .if tiroJogPos.x <= eax && tiroJogPos.y <= ebx ;Houve colisao!
+                ;Tocando o efeito sonoro
+                mPush
+                invoke PlaySound, ADDR som6, NULL, SND_FILENAME or SND_ASYNC
+                mPop
+
                 ;Recebendo a score aleatoria
                 mov eax, 6
                 call PseudoRandom
@@ -122,6 +117,8 @@ ColisaoNaveMis proc
 
                 imul eax, eax, 50
                 add score, ax
+
+                mov mostraScore, ax ;Guardando para mostrar na tela
 
                 ;Animando a explosao
                 mov eax, naveMisPos.x
@@ -264,7 +261,7 @@ ColisaoTiroAliens proc
 
                 mov exJogador, 12
 
-                ;Removendo os tiros da tela
+                ;Removendo os tiros e jogador da tela
                 mov DWORD PTR[ebx], 2000
                 mov DWORD PTR[ecx], 2000
 
@@ -273,6 +270,11 @@ ColisaoTiroAliens proc
 
                 mov delayRespawn, 125
                 dec vidas
+
+                ;Efeito sonoro
+                mPush
+                invoke PlaySound, ADDR som1, NULL, SND_FILENAME or SND_ASYNC
+                mPop
 
                 ;Jogador nao esta mais na tela, podemos sair do loop
                 jmp foraForColiTiroJog
