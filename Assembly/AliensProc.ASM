@@ -233,11 +233,6 @@ MovAliens proc
             imul ecx, ecx, 6
             add ecx, 2 ;espacamento entre os aliens
 
-            ;edx
-
-            .if ecx > 
-            add movidoPos.y, ecx
-
             mov velDir, 1
         .endif
     .else ;vel eh negativa
