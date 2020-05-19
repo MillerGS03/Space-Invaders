@@ -57,6 +57,7 @@ MoverTiro proc
 
         mov cl, velJogTiro
         sub tiroJogPos.y, ecx
+        add ecx, minAlturaJogavel
 
         .if tiroJogPos.y < ecx ;tiro esta no topo da tela
             mov exFimTela, 2 ;tempo para a explosao ficar na tela
@@ -92,3 +93,21 @@ Respawn proc
 
     ret
 Respawn endp
+
+AtualizadaVidas proc
+    push eax
+
+    ;Apenas atualizando a area jogavel a cada 3 ticks
+    mov rect.left, 0
+    mov rect.right, 200 ;Pegando as naves e a qtd de vidas
+    mov eax, maxAlturaJogavel
+    mov rect.top, eax
+    mov eax, altura
+    mov rect.bottom, eax
+
+    invoke InvalidateRect, hWnd, ADDR rect, TRUE
+
+    pop eax
+
+    ret
+AtualizadaVidas endp

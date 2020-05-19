@@ -190,7 +190,7 @@ WndProc proc hWin   :DWORD,
         mov naveMisPos.x, 2000
         mov naveMisPos.y, 2000
 
-        ;call TimerNaveMis
+        call TimerNaveMis
 
         ;Jogador
         mov jogadorPos.x, 0
@@ -215,7 +215,7 @@ WndProc proc hWin   :DWORD,
         return 0
 
     .elseif uMsg == WM_KEYDOWN
-        .if jogadorPos.y != 2000 ;Esta vivo
+        .if delayRespawn == 0 ;Esta vivo
             .if wParam == 37 ;Seta esquerda
                 mov dirJog, 1
             .elseif wParam == 39 ;Seta direita
@@ -254,7 +254,22 @@ WndProc proc hWin   :DWORD,
 
         call Respawn
 
-        invoke InvalidateRect,hWnd,NULL,TRUE
+        .if invalidate == 0
+            ;Apenas atualizando a area jogavel a cada 3 ticks
+            mov rect.left, 0
+            mov eax, largura
+            mov rect.right, eax
+            mov eax, minAlturaJogavel
+            mov rect.top, eax
+            mov eax, maxAlturaJogavel
+            mov rect.bottom, eax
+
+            invoke InvalidateRect, hWnd, ADDR rect, TRUE
+
+            mov invalidate, 2
+        .endif
+
+        dec invalidate
 
     .elseif uMsg == WM_DESTROY
     	mov  EventStop,TRUE
@@ -604,6 +619,6 @@ include AliensProc.ASM
 include NaveMisProc.ASM
 include JogadorProc.ASM
 include ColisoesProc.ASM
-include PseudoRandomProc.ASM
+include AuxiliaresProc.ASM
 
 end start
