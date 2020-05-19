@@ -58,7 +58,7 @@ WinMain proc hInst     :DWORD,
     szText szClassName,"Space_Invaders_Class"
 
     mov wc.cbSize,         sizeof WNDCLASSEX
-    mov wc.style,          CS_BYTEALIGNWINDOW
+    mov wc.style,          CS_HREDRAW or CS_VREDRAW
     mov wc.lpfnWndProc,    offset WndProc
     mov wc.cbClsExtra,     NULL
     mov wc.cbWndExtra,     NULL
@@ -97,7 +97,7 @@ WinMain proc hInst     :DWORD,
     invoke CreateWindowEx,WS_EX_LEFT,
                           ADDR szClassName,
                           ADDR szDisplayName,
-                          WS_OVERLAPPEDWINDOW,
+                          WS_OVERLAPPED or WS_MINIMIZEBOX or WS_SYSMENU,
                           Wtx,Wty,Wwd,Wht,
                           NULL,NULL,
                           hInst,NULL
