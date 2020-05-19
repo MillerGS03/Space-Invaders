@@ -185,15 +185,18 @@
   FontName db "Courier New", 0
 
   ;Outros
-  vidas db 3
-  delayRespawn db 0
+  vidas             db 3
+  delayRespawn      db 0
 
-  delayAliens db 45
+  delayAliens       db 45
 
-  score dw 0
-  maxAlturaJogavel dd 688
-  gTick      db 0
-  RandSeed    dd  ?
+  score             dw 0
+  minAlturaJogavel  dd 60
+  maxAlturaJogavel  dd 688
+  gTick             db 0
+  RandSeed          dd  ?
+
+  invalidate        db 0
 
   ;##### Sons ####;
   som0 db "shoot.wav", 0

@@ -120,6 +120,8 @@ ColisaoNaveMis proc
 
                 mov mostraScore, ax ;Guardando para mostrar na tela
 
+                call AtualizaScore
+
                 ;Animando a explosao
                 mov eax, naveMisPos.x
                 sub eax, 7 ;Centralizando
@@ -228,7 +230,7 @@ ColisaoTiroAliens proc
     mov eax, jogadorPos.x
     mov edx, jogadorPos.y
 
-    .if eax == 2000 ;Jogador nao esta na tela
+    .if delayRespawn != 0 ;Jogador nao esta na tela
         jmp foraForColiTiroJog
     .endif
 
@@ -270,6 +272,8 @@ ColisaoTiroAliens proc
 
                 mov delayRespawn, 125
                 dec vidas
+
+                call AtualizadaVidas ;Atualizando a tela
 
                 ;Efeito sonoro
                 mPush

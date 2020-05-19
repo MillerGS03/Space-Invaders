@@ -63,6 +63,8 @@ AlienDestruido proc
         add score, 10
     .endif
 
+    call AtualizaScore
+
     ;##### Iniciando a explosao #####;
     xor ecx, ecx
     mov cl, BYTE PTR[edi]
@@ -232,6 +234,7 @@ MovAliens proc
             mov cl, altAli
             imul ecx, ecx, 6
             add ecx, 2 ;espacamento entre os aliens
+            add movidoPos.y, ecx
 
             mov velDir, 1
         .endif
@@ -392,6 +395,7 @@ MoverTirosAliens proc
                 mov exFimTelaTiroPos.x, ecx
 
                 mov ecx, DWORD PTR[edx]
+                sub ecx, 5 ;centralizando
                 mov exFimTelaTiroPos.y, ecx
 
                 mov exFimTelaTiro, 2
