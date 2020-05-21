@@ -129,8 +129,10 @@
   aliensY db "0123456789012345678901234567890123456789012345678901234" ;posicoes Y dos aliens
 
   ultimosAliens       db "01234567890", 6 ;guarda os indices dos ultimos aliens
-  linhaAlienMaisBaixa db 4
+  yAlienMaisBaixo     dd 0
   qtdColunasVivas     db 11
+
+  maxYAliens          dd 648
 
   tirosAliX dd "0123", "0123", "0123", 2100
   tirosAliY dd "0123", "0123", "0123", 2100

@@ -180,6 +180,8 @@ WndProc proc hWin   :DWORD,
 
         mov ecx, OFFSET tirosAliX
         mov edx, OFFSET tirosAliY
+
+        call AtualizaMaisBaixo
         
         forIniciaTirosAliens:
             mov DWORD PTR[ecx], 2000 ;Indica fora da tela

@@ -52,10 +52,6 @@ AlienDestruido proc
         .endif
     mPop
 
-
-    ;#### Atualizando "linhaAlienMaisBaixa" ####;
-    call AtualizaMaisBaixo
-
     ;#### Aumentando a velocidade dos aliens ####;
     .if dl < 11
         sub delayAliens, 2
@@ -149,29 +145,32 @@ AlienDestruido proc
     mov tiroJogPos.x, 2000
     mov tiroJogPos.y, 2000
 
+    ;#### Atualizando "yAlienMaisBaixo" ####;
+    call AtualizaMaisBaixo
+
     ret
 AlienDestruido endp
 
 AtualizaMaisBaixo proc
-    push eax
-    push ecx
+    mPush
 
-    mov linhaAlienMaisBaixa, 0
     mov eax, OFFSET ultimosAliens
-    xor ecx, ecx ;auxiliar
+    xor ebx, ebx ;Guarda o mais baixo achado
+    xor ecx, ecx ;cl - contador; ch - auxiliar
 
     forAtualizaMaisBaixo:
-        mov cl, BYTE PTR[eax]
+        mov ch, BYTE PTR[eax]
 
-        .if linhaAlienMaisBaixa < cl
-            mov linhaAlienMaisBaixa, cl
+        .if bl < ch && ch != 255 ;Linha eh mais baixa e coluna existe
+            mov bl, ch
 
-            .if cl == 4 ;Eh o maximo
+            .if ch == 4 ;Eh o maximo
                 jmp fimAtualizaMaisBaixo
             .endif
         .endif
 
         inc eax
+        inc cl
 
         .if BYTE PTR[eax] != 6 ;Ainda ha posicoes a serem procuradas
             jmp forAtualizaMaisBaixo
@@ -179,8 +178,22 @@ AtualizaMaisBaixo proc
 
     fimAtualizaMaisBaixo:
 
-    pop ecx
-    pop eax
+    ;Atualizando a variavel
+    xor ch, ch
+
+    mov edx, OFFSET aliensY
+    imul ebx, ebx, 11
+    add edx, ebx
+    add edx, ecx
+
+    xor ebx, ebx
+
+    mov bl, BYTE PTR[edx]
+    imul ebx, ebx, 6
+
+    mov yAlienMaisBaixo, ebx
+
+    mPop
 
     ret
 AtualizaMaisBaixo endp
@@ -242,8 +255,11 @@ AtualizaLimites proc
 AtualizaLimites endp
 
 MovAliens proc
+    push edi ;auxiliar
+
     xor eax, eax ;comparador
     xor ecx, ecx ;auxiliar
+
 
     ;#### Efeito sonoro ####;
     mPush
@@ -301,7 +317,22 @@ MovAliens proc
             mov cl, altAli
             imul ecx, ecx, 6
             add ecx, 2 ;espacamento entre os aliens
-            add movidoPos.y, ecx
+
+            mov edi, movidoPos.y
+            add edi, yAlienMaisBaixo
+            add edi, ecx
+
+            mPush
+                mov ecx, edi
+
+                mov score, cx
+                call AtualizaScore
+            mPop
+
+
+            .if edi < maxYAliens ;Ainda podemos ir para baixo
+                add movidoPos.y, ecx
+            .endif
 
             mov velDir, 1
         .endif
@@ -317,7 +348,21 @@ MovAliens proc
             mov cl, altAli
             imul ecx, ecx, 6
             add ecx, 2 ;espacamento entre os aliens
-            add movidoPos.y, ecx
+
+            mov edi, movidoPos.y
+            add edi, yAlienMaisBaixo
+            add edi, ecx
+
+            mPush
+                mov ecx, edi
+
+                mov score, cx
+                call AtualizaScore
+            mPop
+
+            .if edi < maxYAliens ;Ainda podemos ir para baixo
+                add movidoPos.y, ecx
+            .endif
 
             mov velDir, 0
         .endif
@@ -329,6 +374,9 @@ MovAliens proc
     .else
         mov indexAli, 36
     .endif
+
+    pop edi
+
     ret
 MovAliens endp
 
