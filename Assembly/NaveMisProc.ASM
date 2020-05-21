@@ -3,9 +3,8 @@ MostrarNaveMis proc
         dec naveMisDelay
 
         .if naveMisDelay == 0 ;Nave deve aparecer
-            ;mPush
-            ;invoke PlaySound, ADDR som7, NULL, SND_FILENAME or SND_ASYNC or SND_ASYNC or SND_LOOP
-            ;mPop
+            ;Tocando o efeito sonoro
+            invoke PlaySound, ADDR som0, NULL, SND_FILENAME or SND_ASYNC or SND_LOOP
 
             mov eax, 2
 
@@ -42,6 +41,9 @@ MoverNaveMis proc
 
                 ;Fazendo com que a nave possa reaparecer
                 call TimerNaveMis
+
+                ;Parando o efeito sonoro
+                invoke PlaySound, ADDR som0, NULL, SND_FILENAME or SND_ASYNC
             .endif
         .else
             add naveMisPos.x, eax
@@ -56,6 +58,9 @@ MoverNaveMis proc
 
                 ;Fazendo com que a nave possa reaparecer
                 call TimerNaveMis
+
+                ;Parando o efeito sonoro
+                invoke PlaySound, ADDR som0, NULL, SND_FILENAME or SND_ASYNC
             .endif
         .endif
     .endif

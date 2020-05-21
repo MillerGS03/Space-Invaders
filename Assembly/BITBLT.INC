@@ -223,6 +223,8 @@
   FilenaamPlusPad	      db 260 dup(0)
   Filenaam			        db 128 dup(0)
 
+  som0                  db "ufo.wav"
+
   ; - MCI_OPEN_PARMS Structure ( API=mciSendCommand ) -
   open_dwCallback       dd ?
   open_wDeviceID        dd ?

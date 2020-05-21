@@ -105,15 +105,16 @@ ColisaoNaveMis proc
             add ebx, 20 ;Fim da nave verticalmente
 
             .if tiroJogPos.x <= eax && tiroJogPos.y <= ebx ;Houve colisao!
-                ;Tocando o efeito sonoro
-                ;mPush
-                ;        invoke    Load_wav,TEXT_("explosion.wav"),addr g_pDSWavSample
-                ;        .if (g_pDSWavSample != 0)
+                ;Parando e Tocando o efeito sonoro
+                invoke PlaySound, ADDR som0, NULL, SND_FILENAME or SND_ASYNC
+                mPush
+                    invoke    Load_wav,TEXT_("invaderkilled.wav"),addr g_pDSWavSample
+                    .if (g_pDSWavSample != 0)
 
-                ;            coinvoke    g_pDSWavSample,IDirectSoundBuffer8,SetCurrentPosition,0 
-                ;            coinvoke    g_pDSWavSample,IDirectSoundBuffer8,Play,0,0,0
-                ;        .endif
-                ;mPop
+                        coinvoke    g_pDSWavSample,IDirectSoundBuffer8,SetCurrentPosition,0 
+                        coinvoke    g_pDSWavSample,IDirectSoundBuffer8,Play,0,0,0
+                    .endif
+                mPop
 
                 ;Recebendo a score aleatoria
                 mov eax, 6
