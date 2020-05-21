@@ -589,13 +589,26 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
         invoke wsprintf, offset buffer, offset format3, vidas
         invoke DrawText, bufferDC, ADDR buffer, -1, ADDR rect, DT_SINGLELINE
 
-        .if vidas >= 3
-            INVOKE  TransparentBlt, bufferDC, 111, 700,39,24,memDC, 0,24,39,24,CREF_TRANSPARENT
+        .if vidas <= 1 ;Nao ha vidas a serem mostradas
+            jmp fimMostraVidas
         .endif
 
-        .if vidas >= 2
-            INVOKE  TransparentBlt, bufferDC, 65, 700,39,24,memDC, 0,24,39,24,CREF_TRANSPARENT
-        .endif
+        mov eax, 2
+
+        forMostraVidas:
+            .if vidas >= 3
+                INVOKE  TransparentBlt, bufferDC, 111, 700,39,24,memDC, 0,24,39,24,CREF_TRANSPARENT
+            .endif
+
+            .if vidas >= 2
+                INVOKE  TransparentBlt, bufferDC, 65, 700,39,24,memDC, 0,24,39,24,CREF_TRANSPARENT
+            .endif
+
+            .if al < vidas
+
+            .endif
+
+        fimMostraVidas:
 
         ;Score da nave misteriosa
         .if tempoMostraScore != 0

@@ -68,6 +68,7 @@ AlienDestruido proc
         add score, 10
     .endif
 
+    call GanhaVida
     call AtualizaScore
 
     ;##### Iniciando a explosao #####;
@@ -322,14 +323,6 @@ MovAliens proc
             add edi, yAlienMaisBaixo
             add edi, ecx
 
-            mPush
-                mov ecx, edi
-
-                mov score, cx
-                call AtualizaScore
-            mPop
-
-
             .if edi < maxYAliens ;Ainda podemos ir para baixo
                 add movidoPos.y, ecx
             .endif
@@ -352,13 +345,6 @@ MovAliens proc
             mov edi, movidoPos.y
             add edi, yAlienMaisBaixo
             add edi, ecx
-
-            mPush
-                mov ecx, edi
-
-                mov score, cx
-                call AtualizaScore
-            mPop
 
             .if edi < maxYAliens ;Ainda podemos ir para baixo
                 add movidoPos.y, ecx

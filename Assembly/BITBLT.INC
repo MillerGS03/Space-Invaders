@@ -196,6 +196,7 @@
 
   ;Outros
   vidas               db 3
+  vidasGanhas         db 0
   delayRespawn        db 0
 
   delayAliens         db 45

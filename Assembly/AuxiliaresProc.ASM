@@ -61,3 +61,33 @@ AtualizaScore proc
 
     ret
 AtualizaScore endp
+
+GanhaVida proc
+    push eax
+    push ebx
+    push edx
+
+    ;O quociente da divisao por 1500 sera quantas vidas extras o jogador devera ter ganho
+    xor eax, eax
+    xor edx, edx
+    mov ax, score
+    mov ebx, 1500
+
+    div ebx
+
+    .if al > vidasGanhas ;Caso ele nao tenha ganhado todas que deveria, daremos
+        inc vidasGanhas
+
+        .if vidas < 8 ;Nao foi atingido o maximo
+            inc vidas
+        .endif
+    .endif
+
+    call AtualizaVidas
+
+    pop edx
+    pop ebx
+    pop eax
+
+    ret
+GanhaVida endp

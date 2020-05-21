@@ -126,6 +126,7 @@ ColisaoNaveMis proc
 
                 mov mostraScore, ax ;Guardando para mostrar na tela
 
+                call GanhaVida
                 call AtualizaScore
 
                 ;Animando a explosao
@@ -279,7 +280,7 @@ ColisaoTiroAliens proc
                 mov delayRespawn, 125
                 dec vidas
 
-                call AtualizadaVidas ;Atualizando a tela
+                call AtualizaVidas ;Atualizando a tela
 
                 ;Efeito sonoro
                 mPush

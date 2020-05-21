@@ -103,7 +103,7 @@ Respawn proc
     ret
 Respawn endp
 
-AtualizadaVidas proc
+AtualizaVidas proc
     push eax
 
     ;Apenas atualizando a area jogavel a cada 3 ticks
@@ -119,4 +119,4 @@ AtualizadaVidas proc
     pop eax
 
     ret
-AtualizadaVidas endp
+AtualizaVidas endp
