@@ -106,9 +106,14 @@ ColisaoNaveMis proc
 
             .if tiroJogPos.x <= eax && tiroJogPos.y <= ebx ;Houve colisao!
                 ;Tocando o efeito sonoro
-                mPush
-                invoke PlaySound, ADDR som6, NULL, SND_FILENAME or SND_ASYNC
-                mPop
+                ;mPush
+                ;        invoke    Load_wav,TEXT_("explosion.wav"),addr g_pDSWavSample
+                ;        .if (g_pDSWavSample != 0)
+
+                ;            coinvoke    g_pDSWavSample,IDirectSoundBuffer8,SetCurrentPosition,0 
+                ;            coinvoke    g_pDSWavSample,IDirectSoundBuffer8,Play,0,0,0
+                ;        .endif
+                ;mPop
 
                 ;Recebendo a score aleatoria
                 mov eax, 6
@@ -277,7 +282,12 @@ ColisaoTiroAliens proc
 
                 ;Efeito sonoro
                 mPush
-                invoke PlaySound, ADDR som1, NULL, SND_FILENAME or SND_ASYNC
+                    invoke    Load_wav,TEXT_("explosion.wav"),addr g_pDSWavSample
+                    .if (g_pDSWavSample != 0)
+
+                        coinvoke    g_pDSWavSample,IDirectSoundBuffer8,SetCurrentPosition,0 
+                        coinvoke    g_pDSWavSample,IDirectSoundBuffer8,Play,0,0,0
+                    .endif
                 mPop
 
                 ;Jogador nao esta mais na tela, podemos sair do loop

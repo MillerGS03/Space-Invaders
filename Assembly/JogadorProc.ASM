@@ -32,7 +32,16 @@ Atirar proc
     .if tiroJogPos.y == 2000 ;Tiro nao existe
         push ecx
 
-        invoke PlaySound, ADDR som0, NULL, SND_FILENAME or SND_ASYNC
+        ;invoke PlaySound, ADDR som0, NULL, SND_FILENAME or SND_ASYNC
+
+        mPush
+            invoke    Load_wav,TEXT_("shoot.wav"),addr g_pDSWavSample
+            .if (g_pDSWavSample != 0)
+
+                coinvoke    g_pDSWavSample,IDirectSoundBuffer8,SetCurrentPosition,0 
+                coinvoke    g_pDSWavSample,IDirectSoundBuffer8,Play,0,0,0
+            .endif
+        mPop
 
         xor ecx, ecx ;auxiliar
 

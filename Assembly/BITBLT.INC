@@ -17,6 +17,9 @@
 
     include \Masm32\include\winmm.inc 
 
+    include     dx9macros.inc
+    include     dsound9.inc
+
 
 
 ;     libraries
@@ -34,18 +37,20 @@
     INCLUDELIB \Masm32\Lib\msvcrt.lib
     INCLUDELIB \Masm32\Lib\masm32.lib
     includelib \Masm32\lib\winmm.lib
+    includelib  dsound.lib
 
 ; #########################################################################
 
         ;=================
         ; Local prototypes
         ;=================
-    WinMain      PROTO :DWORD,:DWORD,:DWORD,:DWORD
-    WndProc      PROTO :DWORD,:DWORD,:DWORD,:DWORD
-    TopXY        PROTO :DWORD,:DWORD
-    FillBuffer   PROTO :DWORD,:DWORD,:BYTE
-    Paint_Proc   PROTO :DWORD,:DWORD
-    PlaySound    PROTO    STDCALL :DWORD, :DWORD, :DWORD
+    WinMain      PROTO          :DWORD,:DWORD,:DWORD,:DWORD
+    WndProc      PROTO          :DWORD,:DWORD,:DWORD,:DWORD
+    TopXY        PROTO          :DWORD,:DWORD
+    FillBuffer   PROTO          :DWORD,:DWORD,:BYTE
+    Paint_Proc   PROTO          :DWORD,:DWORD
+    PlaySound    PROTO STDCALL  :DWORD, :DWORD, :DWORD
+    StartDSound  PROTO STDCALL  :DWORD, :DWORD, :DWORD, :DWORD
 
     ;=============
     ; Local macros
@@ -134,6 +139,8 @@
 
   velJogTiroAlien db 5
 
+  somMarcha db 0
+
   ;Nave Misteriosa
   naveMisPos        POINT <>
   naveMisDelay      dw 1
@@ -205,15 +212,16 @@
   pBufferBM           dd ?
   hBufferBM           dd ?
 
-  ;##### Sons ####;
-  som0 db "shoot.wav", 0
-  som1 db "explosion.wav", 0
-  som2 db "fastinvader1.wav", 0
-  som3 db "fastinvader2.wav", 0
-  som4 db "fastinvader3.wav", 0
-  som5 db "fastinvader4.wav", 0
-  som6 db "invaderkilled.wav", 0
-  som7 db "ufo.wav", 0
+  ;#### Tocador de sons ####;
+  align	                4
+  g_pDS				          LPDIRECTSOUND8		NULL
+  g_pDSWavSample		    LPDIRECTSOUNDBUFFER8	NULL
+
+  String_buffer  	      db 128 dup (0)
+
+  OpenFilter			      db "Wav files",0,"*.wav",0,0
+  FilenaamPlusPad	      db 260 dup(0)
+  Filenaam			        db 128 dup(0)
 
   ; - MCI_OPEN_PARMS Structure ( API=mciSendCommand ) -
   open_dwCallback       dd ?

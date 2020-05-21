@@ -109,6 +109,9 @@ WinMain proc hInst     :DWORD,
     invoke ShowWindow,hWnd,SW_SHOWNORMAL
     invoke UpdateWindow,hWnd
 
+    ;Tocador de sons
+    invoke    StartDSound,hWnd,2,44100,16 
+
     ;===================================
     ; Loop until PostQuitMessage is sent
     ;===================================
@@ -645,10 +648,11 @@ ThreadProc ENDP
 ; ########################################################################
 ;Procs externas
 
-include AliensProc.ASM
-include NaveMisProc.ASM
-include JogadorProc.ASM
-include ColisoesProc.ASM
-include AuxiliaresProc.ASM
+include     TocaSonsProc.ASM
+include     AliensProc.ASM
+include     NaveMisProc.ASM
+include     JogadorProc.ASM
+include     ColisoesProc.ASM
+include     AuxiliaresProc.ASM
 
 end start

@@ -44,8 +44,14 @@ AlienDestruido proc
 
     ;#### Tocando o efeito sonoro ####;
     mPush
-    invoke PlaySound, ADDR som6, NULL, SND_FILENAME or SND_ASYNC
+        invoke    Load_wav,TEXT_("invaderkilled.wav"),addr g_pDSWavSample
+        .if (g_pDSWavSample != 0)
+
+            coinvoke    g_pDSWavSample,IDirectSoundBuffer8,SetCurrentPosition,0 
+            coinvoke    g_pDSWavSample,IDirectSoundBuffer8,Play,0,0,0
+        .endif
     mPop
+
 
     ;#### Atualizando "linhaAlienMaisBaixa" ####;
     call AtualizaMaisBaixo
@@ -238,6 +244,31 @@ AtualizaLimites endp
 MovAliens proc
     xor eax, eax ;comparador
     xor ecx, ecx ;auxiliar
+
+    ;#### Efeito sonoro ####;
+    mPush
+        .if somMarcha == 0
+            invoke    Load_wav,TEXT_("fastinvader4.wav"),addr g_pDSWavSample
+        .elseif somMarcha == 1
+            invoke    Load_wav,TEXT_("fastinvader1.wav"),addr g_pDSWavSample
+        .elseif somMarcha == 2
+            invoke    Load_wav,TEXT_("fastinvader2.wav"),addr g_pDSWavSample
+        .else
+            invoke    Load_wav,TEXT_("fastinvader3.wav"),addr g_pDSWavSample
+        .endif
+
+        .if (g_pDSWavSample != 0)
+
+            coinvoke    g_pDSWavSample,IDirectSoundBuffer8,SetCurrentPosition,0 
+            coinvoke    g_pDSWavSample,IDirectSoundBuffer8,Play,0,0,0
+        .endif
+
+        inc somMarcha
+
+        .if somMarcha == 4
+            mov somMarcha, 0
+        .endif
+    mPop
 
     .if velDir == 0
         mov eax, movidoPos.x
