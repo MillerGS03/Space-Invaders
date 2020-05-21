@@ -47,6 +47,9 @@ AlienDestruido proc
     invoke PlaySound, ADDR som6, NULL, SND_FILENAME or SND_ASYNC
     mPop
 
+    ;#### Atualizando "linhaAlienMaisBaixa" ####;
+    call AtualizaMaisBaixo
+
     ;#### Aumentando a velocidade dos aliens ####;
     .if dl < 11
         sub delayAliens, 2
@@ -142,6 +145,39 @@ AlienDestruido proc
 
     ret
 AlienDestruido endp
+
+AtualizaMaisBaixo proc
+    push eax
+    push ecx
+
+    mov linhaAlienMaisBaixa, 0
+    mov eax, OFFSET ultimosAliens
+    xor ecx, ecx ;auxiliar
+
+    forAtualizaMaisBaixo:
+        mov cl, BYTE PTR[eax]
+
+        .if linhaAlienMaisBaixa < cl
+            mov linhaAlienMaisBaixa, cl
+
+            .if cl == 4 ;Eh o maximo
+                jmp fimAtualizaMaisBaixo
+            .endif
+        .endif
+
+        inc eax
+
+        .if BYTE PTR[eax] != 6 ;Ainda ha posicoes a serem procuradas
+            jmp forAtualizaMaisBaixo
+        .endif
+
+    fimAtualizaMaisBaixo:
+
+    pop ecx
+    pop eax
+
+    ret
+AtualizaMaisBaixo endp
 
 AtualizaLimites proc
     xor eax, eax ;X

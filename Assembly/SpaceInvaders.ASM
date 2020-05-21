@@ -7,7 +7,8 @@
     include bitblt.inc    ; local includes for this file
 
 	; código de link para imagem no arquivo RC
-	bmp			equ		111
+	bmp	    		equ		111
+    bmp2			equ		112
 
 	CREF_TRANSPARENT  EQU 0000000h
 
@@ -23,6 +24,8 @@ start:
     invoke LoadBitmap,hInstance, bmp
     mov hBmp, eax
 
+    invoke LoadBitmap,hInstance, bmp2
+    mov hBmp2, eax
 
     invoke GetCommandLine
     mov CommandLine, eax
@@ -63,7 +66,7 @@ WinMain proc hInst     :DWORD,
     mov wc.cbClsExtra,     NULL
     mov wc.cbWndExtra,     NULL
     m2m wc.hInstance,      hInst
-    mov wc.hbrBackground,  COLOR_WINDOWTEXT
+    mov wc.hbrBackground,  NULL   ;COLOR_WINDOWTEXT
     mov wc.lpszMenuName,   NULL   ;OFFSET MenuName
     mov wc.lpszClassName,  offset szClassName
     m2m wc.hIcon,          hIcon
@@ -203,6 +206,8 @@ WndProc proc hWin   :DWORD,
         rdtsc
         mov RandSeed, eax ;Aleatorizando o inicio da seed
 
+        ;Tela
+        call IniciarBuffer
 		
     .elseif uMsg == WM_SIZE
     ;// obter o tamanho da janela
@@ -242,6 +247,7 @@ WndProc proc hWin   :DWORD,
             call AtirarAliens
         .endif
 
+        call ColisaoBarreiras
         call MovJog
         call MoverNaveMis
         call MoverTiro
@@ -254,22 +260,17 @@ WndProc proc hWin   :DWORD,
 
         call Respawn
 
-        .if invalidate == 0
-            ;Apenas atualizando a area jogavel a cada 3 ticks
-            mov rect.left, 0
-            mov eax, largura
-            mov rect.right, eax
-            mov eax, minAlturaJogavel
-            mov rect.top, eax
-            mov eax, maxAlturaJogavel
-            mov rect.bottom, eax
+        ;Desenhando
+        mov rect.left, 0
+        mov eax, largura
+        mov rect.right, eax
+        mov eax, minAlturaJogavel
+        mov rect.top, eax
+        mov eax, maxAlturaJogavel
+        mov rect.bottom, eax
 
-            invoke InvalidateRect, hWnd, ADDR rect, TRUE
+        invoke InvalidateRect, hWnd, ADDR rect, TRUE
 
-            mov invalidate, 2
-        .endif
-
-        dec invalidate
 
     .elseif uMsg == WM_DESTROY
     	mov  EventStop,TRUE
@@ -308,10 +309,37 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
     invoke CreateCompatibleDC,hDC
     mov memDC, eax
     
-	
-	invoke SelectObject,memDC,hBmp  ; selecionei o novo bitmap
-    mov hOld, eax         
- 
+    invoke SelectObject,memDC,hBmp  ; selecionei o novo bitmap
+    mov hOld, eax   
+
+    ;Queremos desenhar as barreiras "originais" apenas uma vez;
+    .if primeiroInvalidate == 0
+        mov primeiroInvalidate, 1
+
+        ;Desenhando a explosao
+        INVOKE  TransparentBlt, bufferDC, 0, 800, 18, 24, memDC, 150, 48, 18, 24, CREF_TRANSPARENT
+
+        invoke SelectObject,memDC,hBmp2  ; selecionei o novo bitmap 
+
+        ;Desenhando as barreiras
+        INVOKE  TransparentBlt, bufferDC, 105, 800, 66, 48, memDC, 0, 0, 66, 48, CREF_TRANSPARENT
+        INVOKE  TransparentBlt, bufferDC, 237, 800, 66, 48, memDC, 0, 0, 66, 48, CREF_TRANSPARENT
+        INVOKE  TransparentBlt, bufferDC, 369, 800, 66, 48, memDC, 0, 0, 66, 48, CREF_TRANSPARENT
+        INVOKE  TransparentBlt, bufferDC, 501, 800, 66, 48, memDC, 0, 0, 66, 48, CREF_TRANSPARENT
+
+        invoke SelectObject,memDC,hBmp  ; selecionei o novo bitmap
+    .endif
+    ;########################################################;      
+
+    ;##### Desenhando o fundo da tela #####;
+    INVOKE  TransparentBlt, bufferDC, 0, 0, largura, altura, memDC, 0, 0, 1, 1, 0000001h
+
+    ;##### Desenhando as barreiras #####;
+    invoke BitBlt, bufferDC, 105, 543, 66, 48, bufferDC, 105, 800, SRCCOPY
+    invoke BitBlt, bufferDC, 237, 543, 66, 48, bufferDC, 237, 800, SRCCOPY
+    invoke BitBlt, bufferDC, 369, 543, 66, 48, bufferDC, 369, 800, SRCCOPY
+    invoke BitBlt, bufferDC, 501, 543, 66, 48, bufferDC, 501, 800, SRCCOPY
+
     ;##### Desenhando os aliens #####;
     mov eax, OFFSET aliensX
     xor ebx, ebx ;contador
@@ -362,7 +390,7 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
 
         ;Printando o sprite
         mPush
-            INVOKE  TransparentBlt,hDC, printPos.x, printPos.y,36,24,memDC, ecx,0,36,24,CREF_TRANSPARENT 
+            INVOKE  TransparentBlt, bufferDC, printPos.x, printPos.y,36,24,memDC, ecx,0,36,24,CREF_TRANSPARENT 
         mPop
 
         finalLoopDesenho:
@@ -415,7 +443,7 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
                 add eax, ebx
 
                 ;Printando de fato
-                INVOKE  TransparentBlt,hDC, printPos.x, printPos.y, 9, 21, memDC, eax, 48, 9, 21, CREF_TRANSPARENT
+                INVOKE  TransparentBlt, bufferDC, printPos.x, printPos.y, 9, 21, memDC, eax, 48, 9, 21, CREF_TRANSPARENT
 
                 mPop
             .endif
@@ -442,11 +470,11 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
     ;##### Desenhando o jogador #####;  
 
         .if jogadorPos.y != 2000 ;Jogador esta na tela
-            INVOKE  TransparentBlt,hDC, jogadorPos.x, jogadorPos.y,39,24,memDC, 0,24,39,24,CREF_TRANSPARENT
+            INVOKE  TransparentBlt, bufferDC, jogadorPos.x, jogadorPos.y,39,24,memDC, 0,24,39,24,CREF_TRANSPARENT
         .endif
 
         .if tiroJogPos.y != 2000 ;Tiro esta na tela
-            INVOKE  TransparentBlt,hDC, tiroJogPos.x, tiroJogPos.y, 3, 12,memDC, 259, 60, 3, 12,CREF_TRANSPARENT
+            INVOKE  TransparentBlt, bufferDC, tiroJogPos.x, tiroJogPos.y, 3, 12,memDC, 259, 60, 3, 12,CREF_TRANSPARENT
         .endif
 
     ;################################;
@@ -454,34 +482,34 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
     ;##### Desenhando a Nave Misteriosa #####;  
 
         .if naveMisPos.x != 2000 ;Jogador esta na tela
-            INVOKE  TransparentBlt, hDC, naveMisPos.x, naveMisPos.y, 48, 21, memDC, 142, 27, 48, 21, CREF_TRANSPARENT
+            INVOKE  TransparentBlt, bufferDC, naveMisPos.x, naveMisPos.y, 48, 21, memDC, 142, 27, 48, 21, CREF_TRANSPARENT
         .endif
 
     ;########################################;
 
     ;##### Desenhando explosoes #####;  
         .if exFimTela != 0
-            INVOKE  TransparentBlt,hDC, exFimTelaPos.x, exFimTelaPos.y, 24, 24, memDC, 126, 48, 24, 24, CREF_TRANSPARENT
+            INVOKE  TransparentBlt, bufferDC, exFimTelaPos.x, exFimTelaPos.y, 24, 24, memDC, 126, 48, 24, 24, CREF_TRANSPARENT
             dec exFimTela
         .endif
 
         .if exAlien != 0
-            INVOKE  TransparentBlt,hDC, exAlienPos.x, exAlienPos.y, 36, 24, memDC, 216, 0, 36, 24,CREF_TRANSPARENT
+            INVOKE  TransparentBlt, bufferDC, exAlienPos.x, exAlienPos.y, 36, 24, memDC, 216, 0, 36, 24,CREF_TRANSPARENT
             dec exAlien
         .endif
 
         .if exFimTelaTiro != 0
-            INVOKE  TransparentBlt,hDC, exFimTelaTiroPos.x, exFimTelaTiroPos.y, 18, 24, memDC, 108, 48, 18, 24,CREF_TRANSPARENT
+            INVOKE  TransparentBlt, bufferDC, exFimTelaTiroPos.x, exFimTelaTiroPos.y, 18, 24, memDC, 108, 48, 18, 24,CREF_TRANSPARENT
             dec exFimTelaTiro
         .endif
 
         .if exEntreTiros != 0
-            INVOKE  TransparentBlt,hDC, exEntreTirosPos.x, exEntreTirosPos.y, 18, 24, memDC, 108, 48, 18, 24,CREF_TRANSPARENT
+            INVOKE  TransparentBlt, bufferDC, exEntreTirosPos.x, exEntreTirosPos.y, 18, 24, memDC, 108, 48, 18, 24,CREF_TRANSPARENT
             dec exEntreTiros
         .endif
 
         .if exNaveMis != 0
-            INVOKE  TransparentBlt,hDC, exNaveMisPos.x, exNaveMisPos.y, 63, 24, memDC, 198, 24, 63, 24,CREF_TRANSPARENT
+            INVOKE  TransparentBlt, bufferDC, exNaveMisPos.x, exNaveMisPos.y, 63, 24, memDC, 198, 24, 63, 24,CREF_TRANSPARENT
             dec exNaveMis
 
             ;Quando a explosao sumir, a score recebida deve ser mostrada na tela
@@ -492,9 +520,9 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
 
         .if exJogador != 0
             .if exJogadorAnima < 3
-                INVOKE  TransparentBlt,hDC, exJogadorPos.x, exJogadorPos.y, 48, 24, memDC, 39, 24, 48, 24,CREF_TRANSPARENT
+                INVOKE  TransparentBlt, bufferDC, exJogadorPos.x, exJogadorPos.y, 48, 24, memDC, 39, 24, 48, 24,CREF_TRANSPARENT
             .else 
-                INVOKE  TransparentBlt,hDC, exJogadorPos.x, exJogadorPos.y, 48, 24, memDC, 87, 24, 48, 24,CREF_TRANSPARENT
+                INVOKE  TransparentBlt, bufferDC, exJogadorPos.x, exJogadorPos.y, 48, 24, memDC, 87, 24, 48, 24,CREF_TRANSPARENT
             .endif
 
             ;Mudando a animacao da explosao
@@ -510,14 +538,14 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
     ;################################;
 
     ;### Desenhando a UI ###;
-        INVOKE  TransparentBlt,hDC, 0, maxAlturaJogavel, largura, 3, memDC, 15, 31, 1, 1,CREF_TRANSPARENT
+        INVOKE  TransparentBlt, bufferDC, 0, maxAlturaJogavel, largura, 3, memDC, 15, 31, 1, 1,CREF_TRANSPARENT
 
         invoke CreateFont,24,16,0,0,700,0,0,0,OEM_CHARSET,\
                                        OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,\
                                        DEFAULT_QUALITY,DEFAULT_PITCH or FF_SCRIPT,\
                                        ADDR FontName
 
-        invoke SelectObject, hDC, eax
+        invoke SelectObject, bufferDC, eax
         mov    hfont, eax
 
         ;Topo da tela
@@ -528,40 +556,40 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
         mov rect.bottom, 40
 
         RGB 255, 255, 255
-        invoke SetTextColor, hDC, eax
+        invoke SetTextColor, bufferDC, eax
         RGB 0, 0, 0
-        invoke SetBkColor, hDC, eax
+        invoke SetBkColor, bufferDC, eax
 
-        invoke DrawText, hDC, ADDR format0, -1, ADDR rect, DT_SINGLELINE or DT_CENTER
+        invoke DrawText, bufferDC, ADDR format0, -1, ADDR rect, DT_SINGLELINE or DT_CENTER
 
         mov rect.top, 30
         mov rect.bottom, 50
 
-        invoke DrawText, hDC, ADDR format1, -1, ADDR rect, DT_SINGLELINE or DT_CENTER
+        invoke DrawText, bufferDC, ADDR format1, -1, ADDR rect, DT_SINGLELINE or DT_CENTER
 
         mov rect.left, 140
 
         invoke wsprintf, offset buffer, offset format4, score
-        invoke DrawText, hDC, ADDR buffer, -1, ADDR rect, DT_SINGLELINE
+        invoke DrawText, bufferDC, ADDR buffer, -1, ADDR rect, DT_SINGLELINE
 
         ;Final da tela
         mov rect.left, 470
         mov rect.top, 703
         mov rect.bottom, 730
 
-        invoke DrawText, hDC, ADDR format2, -1, ADDR rect, DT_SINGLELINE
+        invoke DrawText, bufferDC, ADDR format2, -1, ADDR rect, DT_SINGLELINE
 
         mov rect.left, 30
 
         invoke wsprintf, offset buffer, offset format3, vidas
-        invoke DrawText, hDC, ADDR buffer, -1, ADDR rect, DT_SINGLELINE
+        invoke DrawText, bufferDC, ADDR buffer, -1, ADDR rect, DT_SINGLELINE
 
         .if vidas >= 3
-            INVOKE  TransparentBlt,hDC, 111, 700,39,24,memDC, 0,24,39,24,CREF_TRANSPARENT
+            INVOKE  TransparentBlt, bufferDC, 111, 700,39,24,memDC, 0,24,39,24,CREF_TRANSPARENT
         .endif
 
         .if vidas >= 2
-            INVOKE  TransparentBlt,hDC, 65, 700,39,24,memDC, 0,24,39,24,CREF_TRANSPARENT
+            INVOKE  TransparentBlt, bufferDC, 65, 700,39,24,memDC, 0,24,39,24,CREF_TRANSPARENT
         .endif
 
         ;Score da nave misteriosa
@@ -577,15 +605,17 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
             mov rect.bottom, ecx
 
             RGB 254, 29, 30 ;Cor da nave misteriosa
-            invoke SetTextColor, hDC, eax
+            invoke SetTextColor, bufferDC, eax
 
             invoke wsprintf, offset buffer, offset format3, mostraScore
-            invoke DrawText, hDC, ADDR buffer, -1, ADDR rect, DT_SINGLELINE
+            invoke DrawText, bufferDC, ADDR buffer, -1, ADDR rect, DT_SINGLELINE
 
             dec tempoMostraScore
         .endif
      ;#######################;
 	
+    invoke BitBlt, hDC, 0, 0, largura, altura, bufferDC, 0, 0, SRCCOPY
+
     invoke DeleteDC,memDC
 
     return 0
