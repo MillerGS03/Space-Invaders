@@ -157,7 +157,7 @@ AtualizaMaisBaixo proc
 
     mov eax, OFFSET ultimosAliens
     xor ebx, ebx ;Guarda o mais baixo achado
-    xor ecx, ecx ;cl - contador; ch - auxiliar
+    xor ecx, ecx ;cl - contador de colunas; ch - auxiliar
 
     forAtualizaMaisBaixo:
         mov ch, BYTE PTR[eax]
@@ -171,9 +171,10 @@ AtualizaMaisBaixo proc
         .endif
 
         inc eax
-        inc cl
 
         .if BYTE PTR[eax] != 6 ;Ainda ha posicoes a serem procuradas
+            inc cl
+
             jmp forAtualizaMaisBaixo
         .endif
 
@@ -191,6 +192,8 @@ AtualizaMaisBaixo proc
 
     mov bl, BYTE PTR[edx]
     imul ebx, ebx, 6
+
+    add ebx, 24 ;Contando o fim o sprite do alien
 
     mov yAlienMaisBaixo, ebx
 
@@ -316,8 +319,9 @@ MovAliens proc
         .else
             ;Movendo para baixo
             mov cl, altAli
-            imul ecx, ecx, 6
             add ecx, 2 ;espacamento entre os aliens
+            imul ecx, ecx, 6
+            shr ecx, 1 ;Andaremos metade
 
             mov edi, movidoPos.y
             add edi, yAlienMaisBaixo
@@ -339,8 +343,9 @@ MovAliens proc
         .else
             ;Movendo para baixo
             mov cl, altAli
-            imul ecx, ecx, 6
             add ecx, 2 ;espacamento entre os aliens
+            imul ecx, ecx, 6
+            shr ecx, 1 ;Andaremos metade
 
             mov edi, movidoPos.y
             add edi, yAlienMaisBaixo

@@ -108,7 +108,8 @@ AtualizaVidas proc
 
     ;Apenas atualizando a area jogavel a cada 3 ticks
     mov rect.left, 0
-    mov rect.right, 200 ;Pegando as naves e a qtd de vidas
+    mov eax, largura
+    mov rect.right, eax
     mov eax, maxAlturaJogavel
     mov rect.top, eax
     mov eax, altura
