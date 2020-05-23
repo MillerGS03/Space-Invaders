@@ -227,6 +227,7 @@ WndProc proc hWin   :DWORD,
             call GameOverAnima
         .endif
 
+        ;Parte da tela fica preta entre os resets dos jogos
         .if delayTelaPreta > 0
             dec delayTelaPreta
 
@@ -234,15 +235,6 @@ WndProc proc hWin   :DWORD,
                 mov modoDeJogo, 0
             .endif
         .endif
-
-        ;Desenhando
-        ;mov rect.left, 0
-        ;mov eax, largura
-        ;mov rect.right, eax
-        ;mov eax, minAlturaJogavel
-        ;mov rect.top, eax
-        ;mov eax, maxAlturaJogavel
-        ;mov rect.bottom, eax
 
         invoke InvalidateRect, hWnd, NULL, TRUE
 
@@ -339,6 +331,7 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
             jmp finalLoopDesenho
         .endif
 
+        ;Descobrido as posicoes reais dos aliens
         imul ecx, ecx, 6
         add ecx, movidoPos.x
         mov dl, limEsq
@@ -643,7 +636,7 @@ Paint_Proc endp
 
 ThreadProc PROC USES ecx Param:DWORD
 
-    invoke WaitForSingleObject,hEventStart, 25 ;INFINITE          ;DELAY AQUI--------------------------------------
+    invoke WaitForSingleObject,hEventStart, 25 ;INFINITE
 
 	.IF eax == WAIT_TIMEOUT	
 	    invoke PostMessage,hWnd,WM_FINISH,NULL,NULL
@@ -667,6 +660,5 @@ include     NaveMisProc.ASM
 include     JogadorProc.ASM
 include     ColisoesProc.ASM
 include     AuxiliaresProc.ASM
-include     UIProc.ASM
 
 end start

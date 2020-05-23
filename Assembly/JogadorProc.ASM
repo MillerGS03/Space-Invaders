@@ -7,7 +7,10 @@ MovJog proc
 
     mov bl, velJog
 
-    .if dirJog == 2 ;direita
+    .if dirJog == 2 ;Movendo para direita
+        ;Vericamos se podemos avancar (nao atravessaremos a borda)
+        ;Como o ponto X do jogador comeca na sua esquerda, precisamos 
+        ;avancar até o fim de seu sprite e verificar onde estara em seguida (adicionar velocidade)
         mov cx, larJog
         add ecx, jogadorPos.x
         add ecx, ebx
@@ -16,8 +19,8 @@ MovJog proc
         .if ecx < largura
             add jogadorPos.x, ebx
         .endif
-    .elseif dirJog == 1 ;esquerda
-        .if jogadorPos.x > ebx ;nao esta na borda
+    .elseif dirJog == 1 ;Movendo para esquerda
+        .if jogadorPos.x > ebx ;Nao esta na borda
             sub jogadorPos.x, ebx
         .endif
     .endif
@@ -32,8 +35,7 @@ Atirar proc
     .if tiroJogPos.y == 2000 ;Tiro nao existe
         push ecx
 
-        ;invoke PlaySound, ADDR som0, NULL, SND_FILENAME or SND_ASYNC
-
+        ;Tocando o efeito sonoro
         mPush
             invoke    Load_wav,TEXT_("shoot.wav"),addr g_pDSWavSample
             .if (g_pDSWavSample != 0)
@@ -43,11 +45,10 @@ Atirar proc
             .endif
         mPop
 
-        xor ecx, ecx ;auxiliar
-
+        ;Fazendo o tiro aparecer acima do jogador
         mov ecx, jogadorPos.x
 
-        add ecx, 18 ;centralizando o tiro
+        add ecx, 18 ;centralizando o X do tiro
         mov tiroJogPos.x, ecx
 
         mov ecx, jogadorPos.y
@@ -68,7 +69,7 @@ MoverTiro proc
         sub tiroJogPos.y, ecx
         add ecx, minAlturaJogavel
 
-        .if tiroJogPos.y < ecx ;tiro esta no topo da tela
+        .if tiroJogPos.y < ecx ;tiro esta no topo da tela -> deve explodir!
             mov exFimTela, 2 ;tempo para a explosao ficar na tela
 
             ;calculando onde mostrar a explosao
@@ -90,16 +91,17 @@ MoverTiro proc
 MoverTiro endp
 
 Respawn proc
-    .if vidas != 0 && delayRespawn > 0
+    .if vidas != 0 && delayRespawn > 0 ;Caso o jogador ainda tenha vidas
+        ;Continuaremos diminuindo o tempo restante para ele respawnar
         dec delayRespawn
 
-        .if delayRespawn == 0
+        .if delayRespawn == 0 ;Caso esteja na hora de reaperecer...
             ;Reaparecendo
             mov jogadorPos.x, 0
             mov jogadorPos.y, 648
         .endif
-    .elseif vidas == 0
-        call GameOver
+    .elseif vidas == 0 ;Caso o jogador nao tenha mais vidas
+        call GameOver ;GAME OVER!
     .endif
 
     ret
