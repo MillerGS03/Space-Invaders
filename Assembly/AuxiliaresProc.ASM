@@ -80,15 +80,15 @@ GanhaVida proc
 GanhaVida endp
 
 GameOver proc
-    mov modoDeJogo, 1
+    mov modoDeJogo, 1; altera o estado do jogo para Game Over, utilizando o número 1
 
     mov ax, score
-    .if ax > highScore
-        mov highScore, ax
+    .if ax > highScore; verifica se o score atual superou o high score
+        mov highScore, ax; caso sim, high score passará a valer o valor do score
     .endif
 
-    mov vidasGanhas, 0
-    mov score,       0
+    mov vidasGanhas, 0; seta as vidasGanhas para 0
+    mov score,       0; seta o score para 0
 
     ret
 GameOver endp
@@ -108,10 +108,10 @@ IniciaJogo proc
 
     mov qtdColunasVivas, 11
 
-    ;Nave Misteriosa
+    ;Nave Misteriosa reiniciada
     mov tempoMostraScore, 0
 
-    ;Jogador
+    ;Jogador reiniciado
     mov dirJog, 0
 
     ;Explosoes (quantos ticks ficarao na tela)
@@ -122,7 +122,7 @@ IniciaJogo proc
     mov exNaveMis,     0
     mov exJogador,     0
 
-    ;Print
+    ;Limpará o format5
     push eax
 
     mov eax, OFFSET format5
@@ -137,11 +137,11 @@ IniciaJogo proc
 
     pop eax
 
-    ;UI
+    ;UI reiniciada
     mov modoDeJogo,    2
     mov indexGameOver, 0
 
-    ;Outros
+    ;Outros contadores do jogo reiniciados
     mov delayRespawn,    0
     mov delayTelaPreta, 25
     mov delayAliens,    45
@@ -163,6 +163,7 @@ IniciaJogo proc
 
     mov movidoPos.x, 71 ;para centralizar
 
+    ; inicia o vetor de últimos aliens com os últimos de cada coluna, ou seja, linha 4, inicialmente
     mov ecx, OFFSET ultimosAliens
     forIniciaUltimosAliens:
         mov BYTE PTR[ecx], 4
@@ -177,12 +178,14 @@ IniciaJogo proc
 
     call AtualizaMaisBaixo
     
+    ; iniciará as posições referentes aos tiros dos aliens com o valor impossível 2000, para controle futuro
     forIniciaTirosAliens:
-        mov DWORD PTR[ecx], 2000 ;Indica fora da tela
+        mov DWORD PTR[ecx], 2000
         mov DWORD PTR[edx], 2000
 
-        add ecx, 4 ;Eh um DWROD, andamos de 4 em 4
-        add edx, 4
+        ;Eh um DWROD, andamos de 4 em 4
+        add ecx, 4; tanto em x 
+        add edx, 4; quanto em y
 
         .if DWORD PTR[ecx] != 2100 ;Fim do vetor
             jmp forIniciaTirosAliens
@@ -203,3 +206,35 @@ IniciaJogo proc
 
     ret
 IniciaJogo endp
+
+GameOverAnima proc
+    .if indexGameOver != 9
+        xor ecx, ecx ;auxiliar
+
+        ;Animacao das letras da palavra Game Over
+        .if delayGameOver > 10
+            mov cl, indexGameOver
+
+            mov eax, OFFSET format5
+            add eax, ecx
+
+            mov ebx, OFFSET format5Total
+            add ebx, ecx
+
+            mov cl, BYTE PTR[ebx]
+            mov BYTE PTR[eax], cl
+
+            inc indexGameOver
+
+            mov delayGameOver, 0
+        .endif
+    .elseif delayGameOver > 50
+        mov vidas,       3 ;Nao queremos que as vidas sejam restauradas ate que a animacao acabe
+
+        call IniciaJogo
+    .endif
+
+    inc delayGameOver
+
+    ret
+GameOverAnima endp
