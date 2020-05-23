@@ -105,8 +105,10 @@ ColisaoNaveMis proc
             add ebx, 20 ;Fim da nave verticalmente
 
             .if tiroJogPos.x <= eax && tiroJogPos.y <= ebx ;Houve colisao!
-                ;Parando e Tocando o efeito sonoro
+                ;Parando e Tocando o efeito sonoro (tocando um barulho rapido para parar o anteiror)
                 invoke PlaySound, ADDR som0, NULL, SND_FILENAME or SND_ASYNC
+
+                ;Tocando o efeito sonoro da destruicao dos aliens
                 mPush
                     invoke    Load_wav,TEXT_("invaderkilled.wav"),addr g_pDSWavSample
                     .if (g_pDSWavSample != 0)

@@ -1,5 +1,5 @@
 MostrarNaveMis proc
-    .if naveMisDelay != 0
+    .if naveMisDelay != 0 ;Se a nave pode aparecer
         dec naveMisDelay
 
         .if naveMisDelay == 0 ;Nave deve aparecer
@@ -8,7 +8,7 @@ MostrarNaveMis proc
 
             mov eax, 2
 
-            call PseudoRandom
+            call PseudoRandom ;Aleatorizando a direcao que ira se mover
 
             .if eax == 0 ;Ir para esquerda
                 mov naveMisPos.x, 624
