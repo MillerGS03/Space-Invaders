@@ -90,7 +90,7 @@ MoverTiro proc
 MoverTiro endp
 
 Respawn proc
-   .if vidas != 0 && delayRespawn > 0
+    .if vidas != 0 && delayRespawn > 0
         dec delayRespawn
 
         .if delayRespawn == 0
@@ -98,26 +98,9 @@ Respawn proc
             mov jogadorPos.x, 0
             mov jogadorPos.y, 648
         .endif
-   .endif
+    .elseif vidas == 0
+        call GameOver
+    .endif
 
     ret
 Respawn endp
-
-AtualizaVidas proc
-    push eax
-
-    ;Apenas atualizando a area jogavel a cada 3 ticks
-    mov rect.left, 0
-    mov eax, largura
-    mov rect.right, eax
-    mov eax, maxAlturaJogavel
-    mov rect.top, eax
-    mov eax, altura
-    mov rect.bottom, eax
-
-    invoke InvalidateRect, hWnd, ADDR rect, TRUE
-
-    pop eax
-
-    ret
-AtualizaVidas endp

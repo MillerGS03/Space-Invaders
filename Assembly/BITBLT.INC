@@ -184,24 +184,33 @@
   posicaoY db 0
   posicaoX db 0
 
-  rect RECT<>
-  format0 db 'SCORE<1>  HI-SCORE  SCORE<2>', 0
-  format1 db '           0000             ', 0
-  format2 db 'CREDIT 00', 0
-  format3 db '%d', 0
-  format4 db '%04d', 0
-  buffer db 20 dup (0)
+  rect          RECT<>
+  format0       db 'SCORE<1>  HI-SCORE  SCORE<2>', 0
+  format1       db '           %04d             ', 0
+  format2       db 'CREDIT 00', 0
+  format3       db '%d', 0
+  format4       db '%04d', 0
+  format5       db '         ', 0
+  format5Total  db 'GAME OVER', 0
+  buffer        db 30 dup (0)
 
-  FontName db "Courier New", 0
+  FontName      db "Courier New", 0
+
+  ;UI
+  modoDeJogo          db 0 ;0 - Jogando, 1 - GameOver, 2 - Tela Preta
+  delayGameOver       db 0
+  indexGameOver       db 0
 
   ;Outros
   vidas               db 3
   vidasGanhas         db 0
-  delayRespawn        db 0
 
+  delayRespawn        db 0
   delayAliens         db 45
+  delayTelaPreta      db 25
 
   score               dw 0
+  highScore           dw 0
   minAlturaJogavel    dd 60
   maxAlturaJogavel    dd 688
   gTick               db 0

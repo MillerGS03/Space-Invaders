@@ -46,26 +46,15 @@ IniciarBuffer proc
     ret 
 IniciarBuffer EndP
 
-AtualizaScore proc
-    mPush
-
-    mov rect.left, 0
-    mov rect.right, 300
-    mov rect.top, 0
-    mov eax, minAlturaJogavel
-    mov rect.bottom, eax
-
-    invoke InvalidateRect, hWnd, ADDR rect, TRUE
-
-    mPop
-
-    ret
-AtualizaScore endp
-
 GanhaVida proc
     push eax
     push ebx
     push edx
+
+    ;Verificando se o maximo de pontos foi atingido
+    .if score > 9999
+        mov score, 9999
+    .endif
 
     ;O quociente da divisao por 1500 sera quantas vidas extras o jogador devera ter ganho
     xor eax, eax
@@ -83,11 +72,134 @@ GanhaVida proc
         .endif
     .endif
 
-    call AtualizaVidas
-
     pop edx
     pop ebx
     pop eax
 
     ret
 GanhaVida endp
+
+GameOver proc
+    mov modoDeJogo, 1
+
+    mov ax, score
+    .if ax > highScore
+        mov highScore, ax
+    .endif
+
+    mov vidasGanhas, 0
+    mov score,       0
+
+    ret
+GameOver endp
+
+IniciaJogo proc
+    ;Parando o efeito sonoro
+    invoke PlaySound, ADDR som0, NULL, SND_FILENAME or SND_ASYNC
+
+    ;##### Valores padroes #####;
+    ;Aliens
+    mov velDir, 0
+
+    mov indexAli, 0
+
+    mov limEsq, 0
+    mov limDir, 0
+
+    mov qtdColunasVivas, 11
+
+    ;Nave Misteriosa
+    mov tempoMostraScore, 0
+
+    ;Jogador
+    mov dirJog, 0
+
+    ;Explosoes (quantos ticks ficarao na tela)
+    mov exFimTela,     0
+    mov exFimTelaTiro, 0
+    mov exEntreTiros,  0
+    mov exAlien,       0
+    mov exNaveMis,     0
+    mov exJogador,     0
+
+    ;Print
+    push eax
+
+    mov eax, OFFSET format5
+    forLimpaFormat5:
+        .if BYTE PTR[eax] != 0
+            mov BYTE PTR[eax], 32
+
+            inc eax
+
+            jmp forLimpaFormat5
+        .endif
+
+    pop eax
+
+    ;UI
+    mov modoDeJogo,    2
+    mov indexGameOver, 0
+
+    ;Outros
+    mov delayRespawn,    0
+    mov delayTelaPreta, 25
+    mov delayAliens,    45
+    mov gTick,           0
+
+    mov invalidate, 0
+
+    mov primeiroInvalidate, 0
+
+    ;##### Inciando coisas diversas #####;
+    ;Aliens
+    mov movidoPos.x, 0
+    mov movidoPos.y, 0
+
+    mov cl, 18
+    call IniciaAliens
+
+    call AtualizaLimites
+
+    mov movidoPos.x, 71 ;para centralizar
+
+    mov ecx, OFFSET ultimosAliens
+    forIniciaUltimosAliens:
+        mov BYTE PTR[ecx], 4
+
+        inc ecx
+        .if BYTE PTR[ecx] != 6
+            jmp forIniciaUltimosAliens
+        .endif
+
+    mov ecx, OFFSET tirosAliX
+    mov edx, OFFSET tirosAliY
+
+    call AtualizaMaisBaixo
+    
+    forIniciaTirosAliens:
+        mov DWORD PTR[ecx], 2000 ;Indica fora da tela
+        mov DWORD PTR[edx], 2000
+
+        add ecx, 4 ;Eh um DWROD, andamos de 4 em 4
+        add edx, 4
+
+        .if DWORD PTR[ecx] != 2100 ;Fim do vetor
+            jmp forIniciaTirosAliens
+        .endif
+
+    ;Nave misteriosa
+    mov naveMisPos.x, 2000
+    mov naveMisPos.y, 2000
+
+    call TimerNaveMis
+
+    ;Jogador
+    mov jogadorPos.x, 0
+    mov jogadorPos.y, 648
+
+    mov tiroJogPos.x, 2000 ;Valores impossiveis (2000)
+    mov tiroJogPos.y, 2000
+
+    ret
+IniciaJogo endp

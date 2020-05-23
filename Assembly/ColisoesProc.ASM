@@ -127,7 +127,6 @@ ColisaoNaveMis proc
                 mov mostraScore, ax ;Guardando para mostrar na tela
 
                 call GanhaVida
-                call AtualizaScore
 
                 ;Animando a explosao
                 mov eax, naveMisPos.x
@@ -280,8 +279,6 @@ ColisaoTiroAliens proc
                 mov delayRespawn, 125
                 dec vidas
 
-                call AtualizaVidas ;Atualizando a tela
-
                 ;Efeito sonoro
                 mPush
                     invoke    Load_wav,TEXT_("explosion.wav"),addr g_pDSWavSample
@@ -323,69 +320,16 @@ ColisaoBarreiras proc
 
     mov ebx, tiroJogPos.x
     mov ecx, tiroJogPos.y
+    xor edx, edx ;Contador
     inc ebx ;Pegando o meio do tiro do jogador
-    dec ecx ;Verificaremos a posicao abaixo do tiro
+    dec ecx ;Verificaremos a posicao acima do tiro
 
-    push ecx
-    invoke GetPixel, bufferDC, ebx, ecx ;Guarda o RGB no eax
-    pop ecx
-
-    .if al == 24 ;ah contem o valor de Red, o R da barreira eh diferente dos demais
-        add ecx, 247 ;Vamos alterar o modelo da barreira
-        sub ebx, 12  ;Centralizando
-    
-        ;### Alinhando a explosao ###;
-        ;Altura
-        xor eax, eax
-        xor edx, edx
-
-        mov eax, ecx
-        push ecx
-            mov ecx, 3
-            div ecx
-        pop ecx
-
-        sub ecx, edx
-        dec ecx
-
-        ;Largura
-        xor eax, eax
-        xor edx, edx
-
-        mov eax, ebx
-        push ebx
-            mov ebx, 3
-            div ebx
-        pop ebx
-
-        sub ebx, edx
-
-        ;Printando a explosao fora da tela no molde
-        INVOKE  TransparentBlt, bufferDC, ebx, ecx, 18, 24, bufferDC, 0, 800, 18, 24, 16777215 ;Equivale a branco
-
-        ;Tirando o tiro da tela
-        mov tiroJogPos.x, 2000
-        mov tiroJogPos.y, 2000
-    .endif
-
-    fimColiBarrTiroJog:
-
-    ;### Com o tiro dos aliens ###;
-    push edi
-    push esi
-
-    mov edi, OFFSET tirosAliX
-    mov esi, OFFSET tirosAliY
-
-    forColiTiroAliBarr:
-        mov ebx, DWORD PTR[edi]
-        mov ecx, DWORD PTR[esi]
-        add ebx, 4 ;Pegando o meio do tiro do jogador
-        add ecx, 21 ;Verificaremos a posicao abaixo do tiro
-
+    forDetectaBarreiraTiroJog:
+        push edx
         push ecx
         invoke GetPixel, bufferDC, ebx, ecx ;Guarda o RGB no eax
         pop ecx
+        pop edx
 
         .if al == 24 ;ah contem o valor de Red, o R da barreira eh diferente dos demais
             add ecx, 247 ;Vamos alterar o modelo da barreira
@@ -421,9 +365,84 @@ ColisaoBarreiras proc
             INVOKE  TransparentBlt, bufferDC, ebx, ecx, 18, 24, bufferDC, 0, 800, 18, 24, 16777215 ;Equivale a branco
 
             ;Tirando o tiro da tela
-            mov DWORD PTR[edi], 2000
-            mov DWORD PTR[esi], 2000
+            mov tiroJogPos.x, 2000
+            mov tiroJogPos.y, 2000
+        .else
+            inc edx
+
+            .if dl < velJogTiro ;Verificando todos os pixels entre a posicao real do tiro e sua proxima
+                dec ecx ;Verificando a posicao acima
+                jmp forDetectaBarreiraTiroJog
+            .endif
         .endif
+
+    fimColiBarrTiroJog:
+
+    ;### Com o tiro dos aliens ###;
+    push edi
+    push esi
+
+    mov edi, OFFSET tirosAliX
+    mov esi, OFFSET tirosAliY
+
+    forColiTiroAliBarr:
+        mov ebx, DWORD PTR[edi]
+        mov ecx, DWORD PTR[esi]
+        xor edx, edx ;Contador
+        add ebx, 4 ;Pegando o meio do tiro do jogador
+        add ecx, 21 ;Verificaremos a posicao abaixo do tiro
+
+        forDetectaBarreiraTiroAlien:
+            push edx
+            push ecx
+            invoke GetPixel, bufferDC, ebx, ecx ;Guarda o RGB no eax
+            pop ecx
+            pop edx
+
+            .if al == 24 ;ah contem o valor de Red, o R da barreira eh diferente dos demais
+                add ecx, 247 ;Vamos alterar o modelo da barreira
+                sub ebx, 12  ;Centralizando
+            
+                ;### Alinhando a explosao ###;
+                ;Altura
+                xor eax, eax
+                xor edx, edx
+
+                mov eax, ecx
+                push ecx
+                    mov ecx, 3
+                    div ecx
+                pop ecx
+
+                sub ecx, edx
+                dec ecx
+
+                ;Largura
+                xor eax, eax
+                xor edx, edx
+
+                mov eax, ebx
+                push ebx
+                    mov ebx, 3
+                    div ebx
+                pop ebx
+
+                sub ebx, edx
+
+                ;Printando a explosao fora da tela no molde
+                INVOKE  TransparentBlt, bufferDC, ebx, ecx, 18, 24, bufferDC, 0, 800, 18, 24, 16777215 ;Equivale a branco
+
+                ;Tirando o tiro da tela
+                mov DWORD PTR[edi], 2000
+                mov DWORD PTR[esi], 2000
+            .else
+                inc edx
+
+                .if dl < velJogTiroAlien ;Verificando todos os pixels entre a posicao real do tiro e sua proxima
+                    inc ecx ;Verificando a posicao abaixo
+                    jmp forDetectaBarreiraTiroAlien
+                .endif
+            .endif
 
         add edi, 4 ;Avancando de DWORD em DWORD
         add esi, 4

@@ -158,54 +158,8 @@ WndProc proc hWin   :DWORD,
 		mov    hThread,eax
 
 		                                                                    ;##### Inicializando o jogo #####;
-        ;Aliens
-        mov movidoPos.x, 0
-        mov movidoPos.y, 0
-
-        mov cl, 18
-        call IniciaAliens
-
-        call AtualizaLimites
-
-        mov movidoPos.x, 71 ;para centralizar
-
-        mov ecx, OFFSET ultimosAliens
-        forIniciaUltimosAliens:
-            mov BYTE PTR[ecx], 4
-
-            inc ecx
-            .if BYTE PTR[ecx] != 6
-                jmp forIniciaUltimosAliens
-            .endif
-
-        mov ecx, OFFSET tirosAliX
-        mov edx, OFFSET tirosAliY
-
-        call AtualizaMaisBaixo
-        
-        forIniciaTirosAliens:
-            mov DWORD PTR[ecx], 2000 ;Indica fora da tela
-            mov DWORD PTR[edx], 2000
-
-            add ecx, 4 ;Eh um DWROD, andamos de 4 em 4
-            add edx, 4
-
-            .if DWORD PTR[ecx] != 2100 ;Fim do vetor
-                jmp forIniciaTirosAliens
-            .endif
-
-        ;Nave misteriosa
-        mov naveMisPos.x, 2000
-        mov naveMisPos.y, 2000
-
-        call TimerNaveMis
-
-        ;Jogador
-        mov jogadorPos.x, 0
-        mov jogadorPos.y, 648
-
-        mov tiroJogPos.x, 2000 ;Valores impossiveis (2000)
-        mov tiroJogPos.y, 2000
+        ;Iniciando o jogo
+        call IniciaJogo
 
         ;Aleatorizador
         rdtsc
@@ -225,7 +179,7 @@ WndProc proc hWin   :DWORD,
         return 0
 
     .elseif uMsg == WM_KEYDOWN
-        .if delayRespawn == 0 ;Esta vivo
+        .if delayRespawn == 0 && modoDeJogo == 0 ;Esta vivo e jogando
             .if wParam == 37 ;Seta esquerda
                 mov dirJog, 1
             .elseif wParam == 39 ;Seta direita
@@ -243,38 +197,54 @@ WndProc proc hWin   :DWORD,
         .endif
    	    
     .elseif uMsg==WM_FINISH                      ;LOOP PRINCIPAL-----------------------------------
-        inc gTick
-        mov al, delayAliens
+        .if modoDeJogo == 0
+            inc gTick
+            mov al, delayAliens
 
-        .if gTick >= al
-            mov gTick, 0
-            call MovAliens
-            call AtirarAliens
+            .if gTick >= al
+                mov gTick, 0
+                call MovAliens
+                call AtirarAliens
+            .endif
+
+            call ColisaoBarreiras
+            call MovJog
+            call MoverNaveMis
+            call MoverTiro
+            call MoverTirosAliens
+            call ColisaoAliens
+            call ColisaoNaveMis
+            call ColisaoTiroAliens
+
+            call MostrarNaveMis
+
+            call Respawn
+
+            .if qtdColunasVivas == 0 ;Todos os aliens foram destruidos
+                call IniciaJogo
+            .endif
+        .elseif modoDeJogo == 1 
+            call GameOverAnima
         .endif
 
-        call ColisaoBarreiras
-        call MovJog
-        call MoverNaveMis
-        call MoverTiro
-        call MoverTirosAliens
-        call ColisaoAliens
-        call ColisaoNaveMis
-        call ColisaoTiroAliens
+        .if delayTelaPreta > 0
+            dec delayTelaPreta
 
-        call MostrarNaveMis
-
-        call Respawn
+            .if delayTelaPreta == 0
+                mov modoDeJogo, 0
+            .endif
+        .endif
 
         ;Desenhando
-        mov rect.left, 0
-        mov eax, largura
-        mov rect.right, eax
-        mov eax, minAlturaJogavel
-        mov rect.top, eax
-        mov eax, maxAlturaJogavel
-        mov rect.bottom, eax
+        ;mov rect.left, 0
+        ;mov eax, largura
+        ;mov rect.right, eax
+        ;mov eax, minAlturaJogavel
+        ;mov rect.top, eax
+        ;mov eax, maxAlturaJogavel
+        ;mov rect.bottom, eax
 
-        invoke InvalidateRect, hWnd, ADDR rect, TRUE
+        invoke InvalidateRect, hWnd, NULL, TRUE
 
 
     .elseif uMsg == WM_DESTROY
@@ -345,6 +315,10 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
     invoke BitBlt, bufferDC, 369, 543, 66, 48, bufferDC, 369, 800, SRCCOPY
     invoke BitBlt, bufferDC, 501, 543, 66, 48, bufferDC, 501, 800, SRCCOPY
 
+    .if modoDeJogo == 2
+        jmp fimDesenhoAliens
+    .endif
+
     ;##### Desenhando os aliens #####;
     mov eax, OFFSET aliensX
     xor ebx, ebx ;contador
@@ -397,6 +371,15 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
         mPush
             INVOKE  TransparentBlt, bufferDC, printPos.x, printPos.y,36,24,memDC, ecx,0,36,24,CREF_TRANSPARENT 
         mPop
+        ;Printado a destruicao das paredes
+        mPush
+            mov eax, printPos.y
+            add eax, 256
+
+            .if eax > 774 ;Desenhando fora da tela
+                INVOKE  TransparentBlt, bufferDC, printPos.x, eax, 36, 24, memDC, 0, 0, 1, 1, 0000001h
+            .endif
+        mPop
 
         finalLoopDesenho:
         ;Verificando se devemos sair do loop
@@ -404,6 +387,8 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
         .if ebx < 55
             jmp forDesenhar
         .endif  
+
+    fimDesenhoAliens:
 
     ;##### Desenhando os tiros dos aliens #####;
     push esi
@@ -570,7 +555,8 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
         mov rect.top, 30
         mov rect.bottom, 50
 
-        invoke DrawText, bufferDC, ADDR format1, -1, ADDR rect, DT_SINGLELINE or DT_CENTER
+        invoke wsprintf, offset buffer, offset format1, highScore
+        invoke DrawText, bufferDC, ADDR buffer, -1, ADDR rect, DT_SINGLELINE or DT_CENTER
 
         mov rect.left, 140
 
@@ -607,7 +593,7 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
             .endif
 
         ;Score da nave misteriosa
-        .if tempoMostraScore != 0
+        .if tempoMostraScore != 0 && modoDeJogo == 0
             mov ecx, exNaveMisPos.x
             add ecx, 10               ;Centralizando a score
             mov rect.left, ecx
@@ -623,6 +609,22 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
 
             invoke wsprintf, offset buffer, offset format3, mostraScore
             invoke DrawText, bufferDC, ADDR buffer, -1, ADDR rect, DT_SINGLELINE
+
+            dec tempoMostraScore
+        .endif
+
+        ;Game Over
+        .if modoDeJogo == 1
+            mov rect.left, 0
+            mov ecx, largura
+            mov rect.right, ecx
+            mov rect.top, 90
+            mov rect.bottom, 120
+
+            RGB 254, 29, 30
+            invoke SetTextColor, bufferDC, eax
+
+            invoke DrawText, bufferDC, ADDR format5, -1, ADDR rect, DT_SINGLELINE or DT_CENTER
 
             dec tempoMostraScore
         .endif
@@ -665,5 +667,6 @@ include     NaveMisProc.ASM
 include     JogadorProc.ASM
 include     ColisoesProc.ASM
 include     AuxiliaresProc.ASM
+include     UIProc.ASM
 
 end start

@@ -69,7 +69,6 @@ AlienDestruido proc
     .endif
 
     call GanhaVida
-    call AtualizaScore
 
     ;##### Iniciando a explosao #####;
     xor ecx, ecx
@@ -329,6 +328,8 @@ MovAliens proc
 
             .if edi < maxYAliens ;Ainda podemos ir para baixo
                 add movidoPos.y, ecx
+            .else
+                call GameOver
             .endif
 
             mov velDir, 1
@@ -353,6 +354,8 @@ MovAliens proc
 
             .if edi < maxYAliens ;Ainda podemos ir para baixo
                 add movidoPos.y, ecx
+            .else
+                call GameOver
             .endif
 
             mov velDir, 0
