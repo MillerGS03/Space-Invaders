@@ -98,8 +98,8 @@
   hWnd            dd 0
   hInstance       dd 0
   hIcon           dd 0
-  hBmp            dd 0
-  hBmp2           dd 0
+  hBmp            dd 0 ; spritesheet
+  hBmp2           dd 0 ; obstaculo
 
   ThreadID 	    dd 0
 	ExitCode 	    dd 0
@@ -114,51 +114,51 @@
 
   ;##### Vars #####;
   ;Aliens
-  velAli db 16
+  velAli db 16 ; velocidade dos aliens
   velDir db 0 ;0 - esquerda, 1 - direita
   larAli db 6 ;Multiplicado por 6 da o tamanho de fato
   altAli db 4 ;Multiplicado por 6 da o tamanho de fato
 
   movidoPos  POINT <> ;guarda quanto foi andado desde a posicao inicial
-  indexAli   db 0
+  indexAli   db 0 ; sprite aberto ou fechado
 
   limEsq     db 0  ;guarda a coluna mais a esquerda com aliens
   limDir     db 0 ;guarda a coluna mais a direita com aliens
 
-  aliensX db "0123456789012345678901234567890123456789012345678901234" ;posicoes X dos aliens
-  aliensY db "0123456789012345678901234567890123456789012345678901234" ;posicoes Y dos aliens
+  aliensX db 55 dup (0) ;posicoes X dos aliens
+  aliensY db 55 dup (0) ;posicoes Y dos aliens
 
-  ultimosAliens       db "01234567890", 6 ;guarda os indices dos ultimos aliens
+  ultimosAliens       db 11 dup (0), 6 ;guarda os indices dos ultimos aliens
   yAlienMaisBaixo     dd 0
   qtdColunasVivas     db 11
 
   maxYAliens          dd 648
 
-  tirosAliX dd "0123", "0123", "0123", 2100
-  tirosAliY dd "0123", "0123", "0123", 2100
-  tirosSprt db      0,      0,      0
-  tirosIndx db      0,      0,      0
+  tirosAliX dd 4 dup (0), 4 dup (0), 4 dup (0), 2100 ; posicoes X dos aliens
+  tirosAliY dd 4 dup (0), 4 dup (0), 4 dup (0), 2100 ; posicoes Y dos aliens
+  tirosSprt db      0,      0,      0 ; classificacao do tiro
+  tirosIndx db      0,      0,      0 ; animacao do tiro
 
-  velJogTiroAlien db 5
+  velJogTiroAlien db 5 ; velocidade do tiro do alien
 
-  somMarcha db 0
+  somMarcha db 0 ; qual som especifico da marcha
 
   ;Nave Misteriosa
-  naveMisPos        POINT <>
-  naveMisDelay      dw 1
-  velNaveMis        db 3
+  naveMisPos        POINT <> ; posicao
+  naveMisDelay      dw 1 ; delay para aparecer na tela (aleatorio)
+  velNaveMis        db 3 ; velocidade da nave misteriosa
   dirNaveMis        db 0 ;0 - Esquerda, 1 - Direita
-  mostraScore       dw 0
-  tempoMostraScore  db 0
+  mostraScore       dw 0 ; pontuacao ganha por matar nave
+  tempoMostraScore  db 0 ; tempo que a pontuacao e exibida
 
   ;Jogador
-  jogadorPos POINT <>
-  tiroJogPos POINT <>
-  larJog dw 39
-  altJog dw 24
+  jogadorPos POINT <> ; posicao do jogador
+  tiroJogPos POINT <> ; posicao do tiro do jogador
+  larJog dw 39 ; largura
+  altJog dw 24 ; altura
 
-  velJog     db 5
-  velJogTiro db 10
+  velJog     db 5 ; velocidade do jogador
+  velJogTiro db 10 ; velocidade do tiro do jogador 
   dirJog db 0 ;0 - parado, 1 - esq, 2 - dir
 
   ;Explosoes (quantos ticks ficarao na tela)
@@ -168,9 +168,9 @@
   exAlien          db 0
   exNaveMis        db 0
   exJogador        db 0
-
   exJogadorAnima   db 0
 
+  ;Explosoes (posicoes)
   exFimTelaPos        POINT <>
   exFimTelaTiroPos    POINT <>
   exEntreTirosPos     POINT <>
@@ -179,12 +179,14 @@
   exJogadorPos        POINT <>
 
   ;Print
-  printPos   POINT <>
+  printPos   POINT <> ; variavel auxiliar para printar
 
-  posicaoY db 0
-  posicaoX db 0
+  posicaoY db 0 ; variavel auxiliar para printar
+  posicaoX db 0; variavel auxiliar para printar
 
   rect          RECT<>
+
+  ;strings a serem printadas
   format0       db 'SCORE<1>  HI-SCORE  SCORE<2>', 0
   format1       db '           %04d             ', 0
   format2       db 'CREDIT 00', 0
@@ -194,6 +196,7 @@
   format5Total  db 'GAME OVER', 0
   buffer        db 30 dup (0)
 
+  ;fonte
   FontName      db "Courier New", 0
 
   ;UI
@@ -205,20 +208,18 @@
   vidas               db 3
   vidasGanhas         db 0
 
-  delayRespawn        db 0
-  delayAliens         db 45
-  delayTelaPreta      db 25
+  delayRespawn        db 0  ; tempo para respawnar
+  delayAliens         db 45 ; delay para os aliens andarem
+  delayTelaPreta      db 25 ; tempo em que os aliens nao sao desenhados antes de comecar o jogo
 
   score               dw 0
   highScore           dw 0
   minAlturaJogavel    dd 60
   maxAlturaJogavel    dd 688
   gTick               db 0
-  RandSeed            dd ?
+  RandSeed            dd ? ; seed para o pseudorandom
 
-  invalidate          db 0
-
-  primeiroInvalidate  db 0
+  primeiroInvalidate  db 0 ; marca se e o primeiro invalidate, para desenharmos barreiras fora da tela apenas uma vez
 
   bufferDC            dd ?
   pBufferBM           dd ?

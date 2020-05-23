@@ -1,5 +1,5 @@
 IniciaAliens proc
-    ;cl contera a posicaY
+    ;cl contera a posicaoY
     xor eax, eax ; o numero total de aliens
 
     mov edx, OFFSET aliensX
@@ -10,10 +10,10 @@ IniciaAliens proc
     xor ecx, ecx ; cl eh auxiliar; ch eh contador
 
     forIni:
-        .if ch == 11
+        .if ch == 11 ; muda de linha se chegou na 12º coluna
             mov cl, altAli
             add posicaoY, cl
-            add posicaoY, 2 ;espacamento entre os aliens
+            add posicaoY, 2 ;espacamento vertical entre os aliens
             mov posicaoX, 0
 
             xor ch, ch
@@ -25,7 +25,7 @@ IniciaAliens proc
         mov byte ptr[ebx + eax], cl
         mov cl, larAli
         add posicaoX, cl
-        add posicaoX, 2
+        add posicaoX, 2 ; espacamento horizontal entre os aliens
 
         inc eax; avanca p o próx
         inc ch
@@ -60,30 +60,31 @@ AlienDestruido proc
     .endif
 
     ;#### Incrementando a pontuacao ####;
-    .if dl < 11
+    .if dl < 11 ; alien pequeno
         add score, 30
-    .elseif dl < 33
+    .elseif dl < 33 ; alien medio
         add score, 20
     .else
-        add score, 10
+        add score, 10 ; alien grande
     .endif
 
-    call GanhaVida
+    call GanhaVida ; verifica se o score chegou a um multiplo de 1500, para ganhar mais uma vida
 
     ;##### Iniciando a explosao #####;
     xor ecx, ecx
     mov cl, BYTE PTR[edi]
     imul ecx, ecx, 6
-    add ecx, movidoPos.x
+    add ecx, movidoPos.x ; posicao X verdadeira do alien morto
 
     push eax
         xor eax, eax
         mov al, limEsq
         imul eax, eax, 6
-        sub ecx, eax
+        sub ecx, eax ; Subtrai o limEsq de movidopos.x, pois ele já havia sido previamente adicionado de forma a evitar numeros negativos
     pop eax
 
-    mov exAlienPos.x, ecx
+    mov exAlienPos.x, ecx ; seta posicao x da explosao
+
 
     xor ecx, ecx
     mov cl, BYTE PTR[esi]
@@ -91,7 +92,7 @@ AlienDestruido proc
     add ecx, movidoPos.y
     mov exAlienPos.y, ecx
 
-    mov exAlien, 2
+    mov exAlien, 2 ; timer para a explsoao ficar na tela (2 ticks)
 
     ;##### Atualizando vetor com os ultimos aliens #####;
     mPush
@@ -106,8 +107,8 @@ AlienDestruido proc
 
     ;Descobrindo a alien mais ao fim da coluna
     mov ecx, OFFSET ultimosAliens
-    add ecx, edx
-    mov ebx, edi
+    add ecx, edx ; soma com o indice da coluna atual
+    mov ebx, edi ; X do alien morto
 
     .if al == 0 ;Caso entre no if seguinte com al sendo 0, havera invasao de memoria
         .if BYTE PTR[ecx] == 0
@@ -151,6 +152,7 @@ AlienDestruido proc
     ret
 AlienDestruido endp
 
+; #### Descobre qual e a posicao Y do limite inferior do ultimo alien ####
 AtualizaMaisBaixo proc
     mPush
 
@@ -201,6 +203,7 @@ AtualizaMaisBaixo proc
     ret
 AtualizaMaisBaixo endp
 
+; #### Encontra as posicoes X dos aliens mais extremos horizontalmente ####
 AtualizaLimites proc
     xor eax, eax ;X
     xor ebx, ebx ;Y
@@ -251,7 +254,7 @@ AtualizaLimites proc
         mov cl, limEsq
         sub cl, dh
         imul ecx, ecx, 6
-        add movidoPos.x, ecx
+        add movidoPos.x, ecx ; Soma o limite esquerdo ao movidoPos.x, com o objetivo de evitar numeros negativos ao andar para a esquerda
     .endif
 
     ret
@@ -282,7 +285,7 @@ MovAliens proc
             coinvoke    g_pDSWavSample,IDirectSoundBuffer8,Play,0,0,0
         .endif
 
-        inc somMarcha
+        inc somMarcha ; Muda o som que será tocado durante a marcha
 
         .if somMarcha == 4
             mov somMarcha, 0
@@ -355,7 +358,7 @@ MovAliens proc
             .if edi < maxYAliens ;Ainda podemos ir para baixo
                 add movidoPos.y, ecx
             .else
-                call GameOver
+                call GameOver ; Aliens desceram até a altura do jogador
             .endif
 
             mov velDir, 0
@@ -482,7 +485,7 @@ AtirarAliens endp
 
 MoverTirosAliens proc
     mov eax, OFFSET tirosAliX
-    mov ebx, maxAlturaJogavel ;Contera a altura da tela
+    mov ebx, maxAlturaJogavel ;Contera a altura jogavel da tela (antes da linha verde)
     xor ecx, ecx ;Contera a vel do tiro
     mov edx, OFFSET tirosAliY
 
@@ -517,7 +520,7 @@ MoverTirosAliens proc
             .endif
         .endif
 
-        add eax, 4
+        add eax, 4 ; avanca de dword em dword
         add edx, 4
 
         .if DWORD PTR[edx] != 2100 ;Fim do vetor
