@@ -147,8 +147,6 @@ IniciaJogo proc
     mov delayAliens,    45
     mov gTick,           0
 
-    mov invalidate, 0
-
     mov primeiroInvalidate, 0
 
     ;##### Inciando coisas diversas #####;

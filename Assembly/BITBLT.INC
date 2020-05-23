@@ -125,17 +125,17 @@
   limEsq     db 0  ;guarda a coluna mais a esquerda com aliens
   limDir     db 0 ;guarda a coluna mais a direita com aliens
 
-  aliensX db 55 dup (0) ;posicoes X dos aliens
-  aliensY db 55 dup (0) ;posicoes Y dos aliens
+  aliensX db "0123456789012345678901234567890123456789012345678901234" ;posicoes X dos aliens
+  aliensY db "0123456789012345678901234567890123456789012345678901234" ;posicoes Y dos aliens
 
-  ultimosAliens       db 11 dup (0), 6 ;guarda os indices dos ultimos aliens
+  ultimosAliens       db "01234567890", 6 ;guarda os indices dos ultimos aliens
   yAlienMaisBaixo     dd 0
   qtdColunasVivas     db 11
 
   maxYAliens          dd 648
 
-  tirosAliX dd 4 dup (0), 4 dup (0), 4 dup (0), 2100 ; posicoes X dos aliens
-  tirosAliY dd 4 dup (0), 4 dup (0), 4 dup (0), 2100 ; posicoes Y dos aliens
+  tirosAliX dd "0123", "0123", "0123", 2100 ; posicoes X dos aliens
+  tirosAliY dd "0123", "0123", "0123", 2100 ; posicoes Y dos aliens
   tirosSprt db      0,      0,      0 ; classificacao do tiro
   tirosIndx db      0,      0,      0 ; animacao do tiro
 
