@@ -9,6 +9,7 @@
 	; código de link para imagem no arquivo RC
 	bmp	    		equ		111
     bmp2			equ		112
+    bmp3			equ		113
 
 	CREF_TRANSPARENT  EQU 0000000h
 
@@ -26,6 +27,9 @@ start:
 
     invoke LoadBitmap,hInstance, bmp2
     mov hBmp2, eax
+
+    invoke LoadBitmap,hInstance, bmp3
+    mov hBmp3, eax
 
     invoke GetCommandLine
     mov CommandLine, eax
@@ -66,7 +70,7 @@ WinMain proc hInst     :DWORD,
     mov wc.cbClsExtra,     NULL
     mov wc.cbWndExtra,     NULL
     m2m wc.hInstance,      hInst
-    mov wc.hbrBackground,  NULL   ;COLOR_WINDOWTEXT
+    mov wc.hbrBackground,  NULL  ;COLOR_WINDOWTEXT
     mov wc.lpszMenuName,   NULL   ;OFFSET MenuName
     mov wc.lpszClassName,  offset szClassName
     m2m wc.hIcon,          hIcon
@@ -157,7 +161,7 @@ WndProc proc hWin   :DWORD,
 		                    ADDR ThreadID
 		mov    hThread,eax
 
-		                                                                    ;##### Inicializando o jogo #####;
+		;##### Inicializando o jogo #####;
         ;Iniciando o jogo
         call IniciaJogo
 
@@ -196,7 +200,7 @@ WndProc proc hWin   :DWORD,
             mov dirJog, 0 ;Deve parar de se mover
         .endif
    	    
-    .elseif uMsg==WM_FINISH                      ;LOOP PRINCIPAL-----------------------------------
+    .elseif uMsg==WM_FINISH
         .if modoDeJogo == 0
             inc gTick
             mov al, delayAliens
@@ -299,7 +303,8 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
     ;########################################################;      
 
     ;##### Desenhando o fundo da tela #####;
-    INVOKE  TransparentBlt, bufferDC, 0, 0, largura, altura, memDC, 0, 0, 1, 1, 0000001h
+    invoke BitBlt, bufferDC, 0, 0, largura, altura, bufferDC, 0, 0, SRCERASE
+    ;INVOKE  TransparentBlt, bufferDC, 0, 0, largura, altura, memDC, 0, 0, 1, 1, 0000001h
 
     ;##### Desenhando as barreiras #####;
     invoke BitBlt, bufferDC, 105, 543, 66, 48, bufferDC, 105, 800, SRCCOPY
@@ -370,7 +375,7 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
             add eax, 256
 
             .if eax > 774 ;Desenhando fora da tela
-                INVOKE  TransparentBlt, bufferDC, printPos.x, eax, 36, 24, memDC, 0, 0, 1, 1, 0000001h
+                INVOKE  TransparentBlt, bufferDC, printPos.x, eax, 36, 24, memDC, 168, 48, 36, 24, 0000001h
             .endif
         mPop
 
@@ -521,8 +526,6 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
     ;################################;
 
     ;### Desenhando a UI ###;
-        INVOKE  TransparentBlt, bufferDC, 0, maxAlturaJogavel, largura, 3, memDC, 15, 31, 1, 1,CREF_TRANSPARENT
-
         invoke CreateFont,24,16,0,0,700,0,0,0,OEM_CHARSET,\
                                        OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,\
                                        DEFAULT_QUALITY,DEFAULT_PITCH or FF_SCRIPT,\
@@ -621,6 +624,10 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
 
             dec tempoMostraScore
         .endif
+
+        ;Barra verde
+        invoke SelectObject, memDC, hBmp3  ; selecionei o novo bitmap
+        INVOKE  TransparentBlt, bufferDC, 0, maxAlturaJogavel, largura, 3, memDC, 0, 0, largura, 3,CREF_TRANSPARENT
      ;#######################;
 	
     invoke BitBlt, hDC, 0, 0, largura, altura, bufferDC, 0, 0, SRCCOPY

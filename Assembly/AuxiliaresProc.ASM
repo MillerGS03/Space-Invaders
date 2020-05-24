@@ -106,6 +106,7 @@ IniciaJogo proc
     mov limEsq, 0
     mov limDir, 0
 
+    mov yAlienMaisBaixo, 0
     mov qtdColunasVivas, 11
 
     ;Nave Misteriosa reiniciada
@@ -122,7 +123,7 @@ IniciaJogo proc
     mov exNaveMis,     0
     mov exJogador,     0
 
-    ;Limpará o format5
+    ;Limpara o format5
     push eax
 
     mov eax, OFFSET format5

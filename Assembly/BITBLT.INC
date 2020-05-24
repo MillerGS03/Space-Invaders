@@ -100,6 +100,7 @@
   hIcon           dd 0
   hBmp            dd 0 ; spritesheet
   hBmp2           dd 0 ; obstaculo
+  hBmp3           dd 0 ; barra verde
 
   ThreadID 	    dd 0
 	ExitCode 	    dd 0
@@ -236,7 +237,7 @@
   FilenaamPlusPad	      db 260 dup(0)
   Filenaam			        db 128 dup(0)
 
-  som0                  db "ufo.wav"
+  som0                  db "ufo.wav", 0
 
   ; - MCI_OPEN_PARMS Structure ( API=mciSendCommand ) -
   open_dwCallback       dd ?
