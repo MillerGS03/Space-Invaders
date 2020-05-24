@@ -95,7 +95,7 @@ GameOver endp
 
 IniciaJogo proc
     ;Parando o efeito sonoro
-    invoke PlaySound, ADDR som0, NULL, SND_FILENAME or SND_ASYNC
+    invoke PlaySound, ADDR som1, NULL, SND_FILENAME or SND_ASYNC
 
     ;##### Valores padroes #####;
     ;Aliens

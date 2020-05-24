@@ -238,6 +238,7 @@
   Filenaam			        db 128 dup(0)
 
   som0                  db "ufo.wav", 0
+  som1                  db "vazio.wav", 0
 
   ; - MCI_OPEN_PARMS Structure ( API=mciSendCommand ) -
   open_dwCallback       dd ?
