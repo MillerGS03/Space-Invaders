@@ -299,7 +299,7 @@ Paint_Proc proc hWin:DWORD, hDC:DWORD
     ;########################################################;      
 
     ;##### Desenhando o fundo da tela #####;
-    INVOKE  BitBlt, bufferDC, 0, 0, largura, altura, memDC, 0, 0, BLACKNESS
+    INVOKE  TransparentBlt, bufferDC, 0, 0, largura, altura, memDC, 0, 0, 1, 1, 0000001h
 
     ;##### Desenhando as barreiras #####;
     invoke BitBlt, bufferDC, 105, 543, 66, 48, bufferDC, 105, 800, SRCCOPY
